@@ -1,13 +1,14 @@
+import RepoInput from "./components/RepoInput";
 
-
-import './App.css'
-
-function App() {
-
+export default function App() {
+  const handleSubmit = (url: string) => {
+    console.log("Repo URL:", url);
+  };
 
   return (
-    <h1 className="text-3xl font-bold text-blue-500">CodeAtlas</h1>
-  )
+    <div className="h-screen flex flex-col items-center justify-center gap-4">
+      <h1 className="text-3xl font-bold">CodeAtlas</h1>
+      <RepoInput onSubmit={handleSubmit} />
+    </div>
+  );
 }
-
-export default App
