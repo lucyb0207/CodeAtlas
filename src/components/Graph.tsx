@@ -1,24 +1,12 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 
-export default function Graph() {
+export default function Graph({ data }: { data: any }) {
   const ref = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
     const svg = d3.select(ref.current);
     svg.selectAll("*").remove();
-
-    const data = {
-      nodes: [
-        { id: "App.ts" },
-        { id: "Auth.ts" },
-        { id: "API.ts" }
-      ],
-      links: [
-        { source: "App.ts", target: "Auth.ts" },
-        { source: "App.ts", target: "API.ts" }
-      ]
-    };
 
     const simulation = d3.forceSimulation(data.nodes as any)
       .force("link", d3.forceLink(data.links).id((d: any) => d.id).distance(100))
@@ -63,7 +51,7 @@ export default function Graph() {
         .attr("cy", (d: any) => d.y);
     });
 
-  }, []);
+  }, [data]);
 
   return <svg ref={ref} width={600} height={400}></svg>;
 }
