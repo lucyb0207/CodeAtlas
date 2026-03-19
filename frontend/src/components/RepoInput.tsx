@@ -6,13 +6,13 @@ export default function RepoInput({ onSubmit }: { onSubmit: (url: string) => voi
   return (
     <div className="flex gap-2">
       <input
-        className="border p-2 rounded w-80"
-        placeholder="Paste GitHub repo URL..."
+        className="border p-2 rounded"
+        placeholder="Paste GitHub repo URL"
         value={url}
         onChange={(e) => setUrl(e.target.value)}
       />
       <button
-        className="bg-black text-white px-4 rounded"
+        className="bg-blue-500 text-white px-4 py-2 rounded"
         onClick={() => onSubmit(url)}
       >
         Analyze
