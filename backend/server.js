@@ -3,8 +3,10 @@ import simpleGit from "simple-git";
 import path from "path";
 import fs from "fs-extra";
 import { parseFolder } from "./parser.js";
+import cors from "cors";
 
 const app = express();
+app.use(cors())
 app.use(express.json());
 
 const PORT = 5050;

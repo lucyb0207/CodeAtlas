@@ -30,10 +30,39 @@ export function parseFolder(folderPath) {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
         walk(fullPath);
-      } else if (entry.isFile() && (fullPath.endsWith(".js") || fullPath.endsWith(".ts"))) {
-        filesMap[fullPath] = entry.name;
+      } else if (entry.isFile() && (fullPath.match(/\.(js|ts|jsx|tsx)$/))) {
+        filesMap[fullPath] = fullPath;
       }
     }
+  }
+  function getFileName(filePath) {
+    return path.basename(filePath);
+  }
+
+  function resolveImport(importPath, currentFile, filesMap) {
+    if (!importPath.startsWith(".")) return null; // ignore external packages
+
+    const basePath = path.resolve(path.dirname(currentFile), importPath);
+
+    const possibleExtensions = [".ts", ".tsx", ".js", ".jsx"];
+
+    // Try direct file match
+    for (const ext of possibleExtensions) {
+      const fullPath = basePath + ext;
+      if (filesMap[fullPath]) {
+        return fullPath;
+      }
+    }
+
+    // Try index file
+    for (const ext of possibleExtensions) {
+      const fullPath = path.join(basePath, "index" + ext);
+      if (filesMap[fullPath]) {
+        return fullPath;
+      }
+    }
+
+    return null;
   }
 
   walk(folderPath);
@@ -45,13 +74,28 @@ export function parseFolder(folderPath) {
 
     const imports = parseFile(fullPath);
     for (let imp of imports) {
-      const impFile = Object.values(filesMap).find(f => f === imp || f.endsWith(imp));
-      if (impFile) {
-        if (!graph.nodes.includes(impFile)) graph.nodes.push(impFile);
-        graph.links.push({ source: fileName, target: impFile });
+      const resolvedPath = resolveImport(imp, fullPath, filesMap);
+
+      if (resolvedPath) {
+        const targetName = getFileName(resolvedPath);
+
+        if (!graph.nodes.includes(targetName)) {
+          graph.nodes.push(targetName);
+        }
+
+        graph.links.push({
+          source: fileName,
+          target: targetName,
+        });
       }
     }
   }
+  graph.links = Array.from(
+    new Set(graph.links.map(l => `${l.source}->${l.target}`))
+  ).map(str => {
+    const [source, target] = str.split("->");
+    return { source, target };
+  });
 
   return graph;
 }
