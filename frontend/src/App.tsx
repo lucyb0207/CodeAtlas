@@ -2,29 +2,28 @@ import { useState } from "react";
 import RepoInput from "./components/RepoInput";
 import Graph from "./components/Graph";
 
-// types
-type NodeType = {
+type Node = {
   id: string;
   x?: number;
   y?: number;
-  vx?: number;
-  vy?: number;
   fx?: number | null;
   fy?: number | null;
 };
 
-type LinkType = {
-  source: string | NodeType;
-  target: string | NodeType;
+type Link = {
+  source: string | Node;
+  target: string | Node;
 };
 
-type GraphDataType = {
-  nodes: NodeType[];
-  links: LinkType[];
-};
+type GraphData = {
+  nodes: Node[];
+  links: Link[];
+  backLinks: Record<string, string[]>;
+}| null;
 
 export default function App() {
-  const [graphData, setGraphData] = useState<GraphDataType | null>(null);
+  const [graphData, setGraphData] = useState<GraphData | null>(null);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
   const handleAnalyze = async (url: string) => {
     try {
@@ -44,13 +43,11 @@ export default function App() {
         nodes: data.graph.nodes.map((n: any) =>
           typeof n === "string" ? { id: n } : n
         ),
-        links: data.graph.links.map((l: any) => {
-          // ensure links reference nodes by id
-          return {
-            source: typeof l.source === "string" ? l.source : l.source.id,
-            target: typeof l.target === "string" ? l.target : l.target.id,
-          };
-        }),
+        links: data.graph.links.map((l: any) => ({
+          source: typeof l.source === "string" ? l.source : l.source.id,
+          target: typeof l.target === "string" ? l.target : l.target.id,
+        })),
+        backLinks: data.graph.backLinks || {},
       };
 
       console.log("Formatted graph:", formattedGraph);
@@ -66,7 +63,58 @@ export default function App() {
 
       <RepoInput onSubmit={handleAnalyze} />
 
-      {graphData && <Graph data={graphData} />}
+      {graphData && <Graph
+          data={graphData}
+          onNodeClick={setSelectedFile}
+          selectedFile={selectedFile}
+        />}
+      {selectedFile && (
+        <div className="fixed right-0 top-0 w-80 h-full bg-white border-l p-4 overflow-auto">
+          <h2 className="font-bold text-lg mb-2">File Inspector</h2>
+          <p className="text-sm text-gray-700">{selectedFile}</p>
+
+          <div className="mt-4 text-xs text-gray-500">
+            (Next step: show imports + file contents here)
+          </div>
+        </div>
+      )}
+      {selectedFile && graphData && (
+
+        <div className="fixed right-0 top-0 w-80 h-full bg-white border-l p-4 overflow-auto">
+          <h2 className="font-bold text-lg mb-3">File Inspector</h2>
+
+          <div className="text-sm">
+            <p className="font-semibold">📄 File:</p>
+            <p className="mb-4">{selectedFile}</p>
+
+            <p className="font-semibold">📥 Imports (used by this file):</p>
+            <ul className="list-disc ml-5 text-gray-600">
+              {graphData.links
+                .filter((l) => {
+                  const source =
+                    typeof l.source === "string" ? l.source : l.source.id;
+
+                  return source === selectedFile;
+                })
+                .map((l, i) => {
+                  const target =
+                    typeof l.target === "string" ? l.target : l.target.id;
+
+                  return <li key={i}>{target}</li>;
+                })}
+            </ul>
+          
+
+            <p className="font-semibold mt-4">📤 Dependents (uses this file):</p>
+            <ul className="list-disc ml-5 text-gray-600">
+              {(graphData.backLinks[selectedFile] || []).map((f, i) => (
+                <li key={i}>{f}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
+    
   );
 }

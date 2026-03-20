@@ -18,24 +18,51 @@ type Link = {
 type GraphData = {
   nodes: Node[];
   links: Link[];
-} | null;
+  backLinks: Record<string, string[]>;
+}| null;
 
-// ---- Component ----
-export default function Graph({ data }: { data: GraphData }) {
+export default function Graph({
+  data,
+  onNodeClick,
+  selectedFile,
+}: {
+  data: GraphData;
+  onNodeClick?: (id: string) => void;
+  selectedFile?: string | null;
+}) {
   const ref = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
-    if (!data) return;
+    if (!data || !ref.current) return;
 
     const svg = d3.select(ref.current);
     svg.selectAll("*").remove();
 
-    // fallback if empty
+    // ---- zoom container ----
+    const g = svg.append("g");
+
+    svg.call(
+      d3.zoom<SVGSVGElement, unknown>().on("zoom", (event) => {
+        g.attr("transform", event.transform);
+      })
+    );
+
+    // ---- nodes/links ----
     const nodes: Node[] =
       data.nodes.length > 0 ? data.nodes : [{ id: "placeholder" }];
 
     const links: Link[] = data.links ?? [];
 
+    // ---- color by folder ----
+    const color = (d: Node) => {
+      if (d.id.includes("components")) return "#8b5cf6";
+      if (d.id.includes("pages")) return "#22c55e";
+      if (d.id.includes("utils")) return "#f59e0b";
+      if (d.id.includes("server")) return "#ef4444";
+      return "#3b82f6";
+    };
+
+    // ---- simulation ----
     const simulation = d3
       .forceSimulation<Node>(nodes)
       .force(
@@ -43,27 +70,30 @@ export default function Graph({ data }: { data: GraphData }) {
         d3
           .forceLink<Node, Link>(links)
           .id((d) => d.id)
-          .distance(100)
+          .distance(70)
       )
-      .force("charge", d3.forceManyBody().strength(-200))
-      .force("center", d3.forceCenter(300, 200));
+      .force("charge", d3.forceManyBody().strength(-120))
+      .force("center", d3.forceCenter(300, 200))
+      .force("collide", d3.forceCollide(28));
 
-    // ---- Links ----
-    const link = svg
+    // ---- links ----
+    const link = g
       .selectAll("line")
       .data(links)
       .enter()
       .append("line")
-      .attr("stroke", "gray");
+      .attr("stroke", "#999")
+      .attr("stroke-opacity", 0.6)
+      .attr("stroke-width", 1.5);
 
-    // ---- Nodes ----
-    const node = svg
+    // ---- nodes ----
+    const node = g
       .selectAll("circle")
       .data(nodes)
       .enter()
       .append("circle")
       .attr("r", 12)
-      .attr("fill", "blue")
+      .attr("fill", color)
       .call(
         d3
           .drag<SVGCircleElement, Node>()
@@ -83,34 +113,78 @@ export default function Graph({ data }: { data: GraphData }) {
           })
       );
 
-    // ---- Labels ----
-    const labels = svg
+    node.on("click", (_, clicked) => {
+      const connected = new Set<string>();
+
+      links.forEach((l: any) => {
+        const s = (l.source as any).id || l.source;
+        const t = (l.target as any).id || l.target;
+
+        if (s === clicked.id || t === clicked.id) {
+          connected.add(s);
+          connected.add(t);
+        }
+      });
+
+      node.attr("opacity", (n: Node) =>
+        connected.has(n.id) ? 1 : 0.15
+      );
+
+      link.attr("opacity", (l: any) => {
+        const s = (l.source as any).id || l.source;
+        const t = (l.target as any).id || l.target;
+
+        return s === clicked.id || t === clicked.id ? 1 : 0.1;
+      });
+    });
+
+    // ---- labels ----
+    const text = g
       .selectAll("text")
       .data(nodes)
       .enter()
       .append("text")
       .text((d) => d.id)
-      .attr("font-size", 10)
-      .attr("text-anchor", "middle");
+      .attr("font-size", 11)
+      .attr("fill", "#333")
+      .attr("pointer-events", "none")
+      .attr("dx", 14)
+      .attr("dy", 4);
 
-    // ---- Tick ----
-    simulation.on("tick", () => {
-      link
-        .attr("x1", (d) => (d.source as Node).x!)
-        .attr("y1", (d) => (d.source as Node).y!)
-        .attr("x2", (d) => (d.target as Node).x!)
-        .attr("y2", (d) => (d.target as Node).y!);
-
-      node
-        .attr("cx", (d) => d.x!)
-        .attr("cy", (d) => d.y!);
-
-      labels
-        .attr("x", (d) => d.x!)
-        .attr("y", (d) => d.y! - 15);
+    // ---- hover ----
+    node.on("mouseover", (_, hovered) => {
+      node.attr("fill", (n: Node) =>
+        n.id === hovered.id ? "orange" : color(n)
+      );
     });
 
-    // ---- Cleanup ----
+    node.on("mouseout", () => {
+      node.attr("fill", color);
+    });
+
+    // ---- click ----
+    node.on("click", (_, d) => {
+      onNodeClick?.(d.id);
+    });
+
+    node.attr("stroke", (d: any) =>
+      d.id === selectedFile ? "black" : null
+    );
+
+    // ---- tick ----
+    simulation.on("tick", () => {
+      link
+        .attr("x1", (d: any) => (d.source as Node).x!)
+        .attr("y1", (d: any) => (d.source as Node).y!)
+        .attr("x2", (d: any) => (d.target as Node).x!)
+        .attr("y2", (d: any) => (d.target as Node).y!);
+
+      node.attr("cx", (d) => d.x!).attr("cy", (d) => d.y!);
+
+      text.attr("x", (d) => d.x!).attr("y", (d) => d.y!);
+    });
+
+    // ---- auto cleanup ----
     return () => {
       simulation.stop();
     };
@@ -121,7 +195,10 @@ export default function Graph({ data }: { data: GraphData }) {
       ref={ref}
       width={600}
       height={400}
-      style={{ border: "1px solid black" }}
+      style={{
+        border: "1px solid #ddd",
+        background: "#fafafa",
+      }}
     />
   );
 }

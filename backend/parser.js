@@ -19,10 +19,11 @@ export function parseFile(filePath) {
   return imports;
 }
 
-// recursively walk a folder and parse all .js/.ts files
+// recursively walk a folder and parse all .js/.ts etc. files
 export function parseFolder(folderPath) {
   const graph = { nodes: [], links: [] };
   const filesMap = {}; // map filename → full path
+  graph.backLinks = {};
 
   function walk(dir) {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -38,55 +39,56 @@ export function parseFolder(folderPath) {
   function getFileName(filePath) {
     return path.basename(filePath);
   }
-
-  function resolveImport(importPath, currentFile, filesMap) {
-    if (!importPath.startsWith(".")) return null; // ignore external packages
-
-    const basePath = path.resolve(path.dirname(currentFile), importPath);
-
-    const possibleExtensions = [".ts", ".tsx", ".js", ".jsx"];
-
-    // Try direct file match
-    for (const ext of possibleExtensions) {
-      const fullPath = basePath + ext;
-      if (filesMap[fullPath]) {
-        return fullPath;
-      }
-    }
-
-    // Try index file
-    for (const ext of possibleExtensions) {
-      const fullPath = path.join(basePath, "index" + ext);
-      if (filesMap[fullPath]) {
-        return fullPath;
-      }
-    }
-
-    return null;
+  function toRelative(filePath, base) {
+    return path.relative(base, filePath).replace(/\\/g, "/");
   }
 
   walk(folderPath);
 
   // parse each file
   for (let fullPath in filesMap) {
-    const fileName = filesMap[fullPath];
-    if (!graph.nodes.includes(fileName)) graph.nodes.push(fileName);
+    const fileId = toRelative(fullPath, folderPath).replace(/\\/g, "/");
+
+    if (!graph.nodes.find(n => n.id === fileId)) {
+      graph.nodes.push({ id: fileId });
+    }
 
     const imports = parseFile(fullPath);
+
     for (let imp of imports) {
-      const resolvedPath = resolveImport(imp, fullPath, filesMap);
+      if (imp.startsWith(".")) {
+        // resolve relative import
+        let resolved = path.resolve(path.dirname(fullPath), imp);
 
-      if (resolvedPath) {
-        const targetName = getFileName(resolvedPath);
+        // try adding extensions
+        const possible = [
+          resolved,
+          resolved + ".ts",
+          resolved + ".tsx",
+          resolved + ".js",
+          resolved + ".jsx",
+          resolved + "/index.ts",
+          resolved + "/index.tsx",
+          resolved + "/index.js",
+          resolved + "/index.jsx",
+        ];
 
-        if (!graph.nodes.includes(targetName)) {
-          graph.nodes.push(targetName);
+        const found = possible.find(p => filesMap[p]);
+
+        if (found) {
+          const targetId = toRelative(found, folderPath);
+
+          graph.links.push({
+            source: fileId,
+            target: targetId,
+          });
+
+          if (!graph.backLinks[targetId]) {
+            graph.backLinks[targetId] = [];
+          }
+
+          graph.backLinks[targetId].push(fileId);
         }
-
-        graph.links.push({
-          source: fileName,
-          target: targetName,
-        });
       }
     }
   }
