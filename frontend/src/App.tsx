@@ -24,6 +24,13 @@ type GraphData = {
 export default function App() {
   const [graphData, setGraphData] = useState<GraphData | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  
+  
+  const filteredNodes =
+    graphData?.nodes.filter((n) =>
+      n.id.toLowerCase().includes(search.toLowerCase())
+    ) || [];
 
   const handleAnalyze = async (url: string) => {
     try {
@@ -62,12 +69,36 @@ export default function App() {
       <h1 className="text-3xl font-bold">CodeAtlas</h1>
 
       <RepoInput onSubmit={handleAnalyze} />
+      <input
+          type="text"
+          placeholder="Search file..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="border px-3 py-2 rounded w-80"
+      />
+      {search && (
+        <div className="border w-80 bg-white max-h-40 overflow-auto">
+          {filteredNodes.slice(0, 10).map((n, i) => (
+            <div
+              key={i}
+              className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+              onClick={() => {
+                setSelectedFile(n.id);
+                setSearch("");
+              }}
+            >
+              {n.id}
+            </div>
+          ))}
+        </div>
+      )}
 
       {graphData && <Graph
-          data={graphData}
-          onNodeClick={setSelectedFile}
-          selectedFile={selectedFile}
-        />}
+        data={graphData}
+        onNodeClick={setSelectedFile}
+        selectedFile={selectedFile}
+        search={search}
+      />}
       {selectedFile && (
         <div className="fixed right-0 top-0 w-80 h-full bg-white border-l p-4 overflow-auto">
           <h2 className="font-bold text-lg mb-2">File Inspector</h2>

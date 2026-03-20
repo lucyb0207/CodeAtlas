@@ -25,10 +25,12 @@ export default function Graph({
   data,
   onNodeClick,
   selectedFile,
+  search,
 }: {
   data: GraphData;
   onNodeClick?: (id: string) => void;
   selectedFile?: string | null;
+  search?: string;
 }) {
   const ref = useRef<SVGSVGElement | null>(null);
 
@@ -62,6 +64,27 @@ export default function Graph({
       return "#3b82f6";
     };
 
+    function getId(val: any) {
+      return typeof val === "string" ? val : val.id;
+    }
+
+    const connected = new Set<string>();
+
+    if (selectedFile) {
+      links.forEach((l: any) => {
+        const source = getId(l.source);
+        const target = getId(l.target);
+
+        if (source === selectedFile) {
+          connected.add(target); // imports
+        }
+
+        if (target === selectedFile) {
+          connected.add(source); // dependents
+        }
+      });
+    }
+
     // ---- simulation ----
     const simulation = d3
       .forceSimulation<Node>(nodes)
@@ -82,7 +105,24 @@ export default function Graph({
       .data(links)
       .enter()
       .append("line")
-      .attr("stroke", "#999")
+      .attr("stroke", (l: any) => {
+        if (!selectedFile) return "#999";
+
+        const source = getId(l.source);
+        const target = getId(l.target);
+
+        if (source === selectedFile) return "#4dabf7"; // imports
+        if (target === selectedFile) return "#51cf66"; // dependents
+
+        return "#eee"; // faded
+      })
+      .attr("stroke-width", (l: any) => {
+        const source = getId(l.source);
+        const target = getId(l.target);
+
+        if (source === selectedFile || target === selectedFile) return 2.5;
+        return 1;
+      })
       .attr("stroke-opacity", 0.6)
       .attr("stroke-width", 1.5);
 
@@ -93,7 +133,19 @@ export default function Graph({
       .enter()
       .append("circle")
       .attr("r", 12)
-      .attr("fill", color)
+      .attr("fill", (d) => {
+        if (search && d.id.toLowerCase().includes(search.toLowerCase())) {
+          return "#ffd43b"; // yellow = search match
+        }
+
+        if (!selectedFile) return "steelblue";
+
+        if (d.id === selectedFile) return "#ff5555";
+
+        if (connected.has(d.id)) return "#4dabf7";
+
+        return "#ddd";
+      })
       .call(
         d3
           .drag<SVGCircleElement, Node>()
@@ -111,7 +163,14 @@ export default function Graph({
             d.fx = null;
             d.fy = null;
           })
-      );
+      )
+      .attr("opacity", (d: any) => {
+        if (!selectedFile) return 1;
+
+        if (d.id === selectedFile || connected.has(d.id)) return 1;
+
+        return 0.3;
+      });
 
     node.on("click", (_, clicked) => {
       const connected = new Set<string>();
@@ -188,7 +247,7 @@ export default function Graph({
     return () => {
       simulation.stop();
     };
-  }, [data]);
+  }, [data, selectedFile]);
 
   return (
     <svg
