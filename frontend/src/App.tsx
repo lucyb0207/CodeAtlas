@@ -25,6 +25,7 @@ export default function App() {
   const [graphData, setGraphData] = useState<GraphData | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [fileContent, setFileContent] = useState<string | null>(null);
   
   
   const filteredNodes =
@@ -63,6 +64,20 @@ export default function App() {
       console.error("Error:", err);
     }
   };
+  const handleNodeClick = async (id: string) => {
+      setSelectedFile(id);
+
+      try {
+        const res = await fetch(
+          `http://localhost:5050/file?path=${encodeURIComponent(id)}`
+        );
+
+        const data = await res.json();
+        setFileContent(data.content);
+      } catch (err) {
+        console.error(err);
+      }
+  };
 
   return (
     <div className="h-screen flex flex-col items-center justify-center gap-4">
@@ -95,7 +110,7 @@ export default function App() {
 
       {graphData && <Graph
         data={graphData}
-        onNodeClick={setSelectedFile}
+        onNodeClick={handleNodeClick}
         selectedFile={selectedFile}
         search={search}
       />}
@@ -143,6 +158,11 @@ export default function App() {
               ))}
             </ul>
           </div>
+          {fileContent && (
+            <div className="fixed bottom-0 left-0 w-full h-64 bg-black text-green-200 p-3 overflow-auto text-xs">
+              <pre>{fileContent}</pre>
+            </div>
+          )}
         </div>
       )}
     </div>

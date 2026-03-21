@@ -37,3 +37,20 @@ app.post("/analyze", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Backend server running on http://localhost:${PORT}`);
 });
+
+app.get("/file", async (req, res) => {
+  const { path: filePath } = req.query;
+
+  if (!filePath) {
+    return res.status(400).json({ error: "Missing file path" });
+  }
+
+  try {
+    const fullPath = path.join(TEMP_DIR, filePath);
+    const content = await fs.readFile(fullPath, "utf-8");
+
+    res.json({ content });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
