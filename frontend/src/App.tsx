@@ -1,6 +1,7 @@
 import { useState } from "react";
 import RepoInput from "./components/RepoInput";
 import Graph from "./components/Graph";
+import Editor from "@monaco-editor/react";
 
 type Node = {
   id: string;
@@ -77,6 +78,13 @@ export default function App() {
       } catch (err) {
         console.error(err);
       }
+  };
+  const getLanguage = (file: string | null) => {
+    if (!file) return "plaintext";
+    if (file.endsWith(".ts") || file.endsWith(".tsx")) return "typescript";
+    if (file.endsWith(".js") || file.endsWith(".jsx")) return "javascript";
+    if (file.endsWith(".json")) return "json";
+    return "plaintext";
   };
 
   return (
@@ -159,8 +167,19 @@ export default function App() {
             </ul>
           </div>
           {fileContent && (
-            <div className="fixed bottom-0 left-0 w-full h-64 bg-black text-green-200 p-3 overflow-auto text-xs">
-              <pre>{fileContent}</pre>
+            <div className="fixed bottom-0 left-0 w-full h-72 border-t">
+              <Editor
+                height="100%"
+                language={getLanguage(selectedFile)}
+                value={fileContent}
+                theme="vs-dark"
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 14,
+                  wordWrap: "on",
+                  readOnly: true,
+                }}
+              />
             </div>
           )}
         </div>
