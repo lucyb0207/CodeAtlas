@@ -174,10 +174,10 @@ export default function App() {
                 value={fileContent}
                 theme="vs-dark"
                 options={{
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  wordWrap: "on",
                   readOnly: true,
+                  minimap: { enabled: false },
+                  fontSize: 13,
+                  wordWrap: "on",
                 }}
               />
             </div>
