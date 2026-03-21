@@ -27,6 +27,8 @@ Backend:
 
 <img width="1576" height="830" alt="Screenshot 2026-03-21 at 08 57 19" src="https://github.com/user-attachments/assets/68be7f91-f5b7-4fca-80ed-939e160a4d30" />
 
+
+
 ## How It Works
 
 1. Enter a GitHub repo URL  
