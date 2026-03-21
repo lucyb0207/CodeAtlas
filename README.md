@@ -1,6 +1,6 @@
 # CodeAtlas
 
-Visualise and explore any GitHub repository as an interactive dependency graph.
+Visualise and explore any GitHub repository as an interactive dependency graph. Currently supports JavaScript and TypeScript projects, with plans to expand to more languages like Python and C++.
 
 ## Features
 
