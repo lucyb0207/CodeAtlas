@@ -135,7 +135,7 @@ export default function Graph({
       .attr("r", 12)
       .attr("fill", (d) => {
         if (search && d.id.toLowerCase().includes(search.toLowerCase())) {
-          return "#ffd43b"; // yellow = search match
+          return "#ffd43b"; 
         }
 
         if (!selectedFile) return "steelblue";

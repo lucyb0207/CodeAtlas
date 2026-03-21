@@ -47,7 +47,6 @@ export default function App() {
       const data = await res.json();
       console.log("Raw data:", data);
 
-      // Format nodes: convert strings into objects with `id`
       const formattedGraph = {
         nodes: data.graph.nodes.map((n: any) =>
           typeof n === "string" ? { id: n } : n

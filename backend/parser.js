@@ -19,10 +19,9 @@ export function parseFile(filePath) {
   return imports;
 }
 
-// recursively walk a folder and parse all .js/.ts etc. files
 export function parseFolder(folderPath) {
   const graph = { nodes: [], links: [] };
-  const filesMap = {}; // map filename → full path
+  const filesMap = {}; 
   graph.backLinks = {};
 
   function walk(dir) {
@@ -45,7 +44,6 @@ export function parseFolder(folderPath) {
 
   walk(folderPath);
 
-  // parse each file
   for (let fullPath in filesMap) {
     const fileId = toRelative(fullPath, folderPath).replace(/\\/g, "/");
 
@@ -57,10 +55,8 @@ export function parseFolder(folderPath) {
 
     for (let imp of imports) {
       if (imp.startsWith(".")) {
-        // resolve relative import
         let resolved = path.resolve(path.dirname(fullPath), imp);
 
-        // try adding extensions
         const possible = [
           resolved,
           resolved + ".ts",
