@@ -33,12 +33,19 @@ export default function Graph({
   search?: string;
 }) {
   const ref = useRef<SVGSVGElement | null>(null);
-
+  const containerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (!data || !ref.current) return;
 
     const svg = d3.select(ref.current);
     svg.selectAll("*").remove();
+
+    const rect = containerRef.current?.getBoundingClientRect();
+
+    if (!rect) return;
+
+    const width = rect.width;
+    const height = rect.height;
 
     // ---- zoom container ----
     const g = svg.append("g");
@@ -85,6 +92,7 @@ export default function Graph({
       });
     }
 
+
     // ---- simulation ----
     const simulation = d3
       .forceSimulation<Node>(nodes)
@@ -96,7 +104,9 @@ export default function Graph({
           .distance(70)
       )
       .force("charge", d3.forceManyBody().strength(-120))
-      .force("center", d3.forceCenter(300, 200))
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force("x", d3.forceX(width / 2).strength(0.05))
+      .force("y", d3.forceY(height / 2).strength(0.05))
       .force("collide", d3.forceCollide(28));
 
     // ---- links ----
@@ -247,17 +257,16 @@ export default function Graph({
     return () => {
       simulation.stop();
     };
-  }, [data, selectedFile]);
+  }, [data, selectedFile, search]);
 
   return (
-    <svg
-      ref={ref}
-      width={600}
-      height={400}
-      style={{
-        border: "1px solid #ddd",
-        background: "#fafafa",
-      }}
-    />
+    <div ref={containerRef} className="w-full h-full">
+      <svg
+        ref={ref}
+        width="100%"
+        height="100%"
+        style={{ border: "1px solid #ddd", background: "#fafafa" }}
+      />
+    </div>
   );
 }

@@ -87,7 +87,8 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen flex flex-col items-center justify-center gap-4">
+   <div className="h-screen flex">
+   <div className="flex-1 flex flex-col items-center justify-center gap-4 overflow-hidden transition-all duration-300">
       <h1 className="text-3xl font-bold">CodeAtlas</h1>
 
       <RepoInput onSubmit={handleAnalyze} />
@@ -115,25 +116,19 @@ export default function App() {
         </div>
       )}
 
-      {graphData && <Graph
-        data={graphData}
-        onNodeClick={handleNodeClick}
-        selectedFile={selectedFile}
-        search={search}
-      />}
-      {selectedFile && (
-        <div className="fixed right-0 top-0 w-80 h-full bg-white border-l p-4 overflow-auto">
-          <h2 className="font-bold text-lg mb-2">File Inspector</h2>
-          <p className="text-sm text-gray-700">{selectedFile}</p>
-
-          <div className="mt-4 text-xs text-gray-500">
-            (Next step: show imports + file contents here)
-          </div>
+      {graphData && <div className="flex-1 w-full overflow-hidden">
+          <Graph
+            data={graphData}
+            onNodeClick={handleNodeClick}
+            selectedFile={selectedFile}
+            search={search}
+          />
         </div>
-      )}
+      }
+      </div>
       {selectedFile && graphData && (
 
-        <div className="fixed right-0 top-0 w-80 h-full bg-white border-l p-4 overflow-auto">
+        <div className="w-80 h-full border-l bg-white p-4 overflow-auto">
           <h2 className="font-bold text-lg mb-3">File Inspector</h2>
 
           <div className="text-sm">
