@@ -2,7 +2,7 @@
 ![Developer Banner 5](https://ishan-rest.vercel.app/svg/banner/dev5/CodeAtlas)
 # CodeAtlas
 
-Visualise and explore any GitHub repository as an interactive dependency graph. Currently supports JavaScript and TypeScript projects, with plans to expand to more languages like Python and C++.
+Visualise and explore any GitHub repository as an interactive dependency graph. Currently supports JavaScript, TypeScript and Python projects, with plans to expand to more languages like C++/Java.
 
 ## Table of Contents
 1. [ Features ](https://github.com/lucyb0207/CodeAtlas?tab=readme-ov-file#features)
@@ -11,6 +11,7 @@ Visualise and explore any GitHub repository as an interactive dependency graph. 
 4. [ How It Works ](https://github.com/lucyb0207/CodeAtlas?tab=readme-ov-file#how-it-works)
 5. [ Installation ](https://github.com/lucyb0207/CodeAtlas?tab=readme-ov-file#installation)
 6. [ Contributions ](https://github.com/lucyb0207/CodeAtlas?tab=readme-ov-file#contributions)
+
 ## Features
 
 - Dependency graph (D3.js)
@@ -18,6 +19,13 @@ Visualise and explore any GitHub repository as an interactive dependency graph. 
 - Interactive nodes
 - Monaco code preview
 - Search functionality
+- Multi-language support (JavaScript, TypeScript, Python)
+
+## Supported Languages
+
+- JavaScript
+- TypeScript
+- Python 
 
 ## Tech Stack
 
@@ -32,7 +40,7 @@ Backend:
 - ![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)
 - simple-git
 - @babel/parser
-
+- Python (AST Parsing)
 
 ## Examples:
 <img width="1054" height="815" alt="Screenshot 2026-03-21 at 08 56 39" src="https://github.com/user-attachments/assets/f11efaba-b8b4-4a1d-b93d-26e499ae0296" />
@@ -45,7 +53,7 @@ Backend:
 
 1. Enter a GitHub repo URL  
 2. Repo is cloned locally  
-3. Files are parsed (AST)  
+3. Files are parsed using language-specific AST parsers  
 4. Import relationships extracted  
 5. Graph rendered  
 
