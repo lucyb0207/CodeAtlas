@@ -2,7 +2,7 @@ import express from "express";
 import simpleGit from "simple-git";
 import path from "path";
 import fs from "fs-extra";
-import { parseFolder } from "./parser.js";
+import { parseFolderJS } from "./parser.js";
 import cors from "cors";
 import { exec } from "child_process";
 
@@ -51,6 +51,30 @@ function hasPythonFiles(dir) {
   return found;
 }
 
+function mergeGraphs(g1, g2) {
+  const nodeMap = new Map();
+
+  const addNode = (n) => {
+    if (!nodeMap.has(n.id)) {
+      nodeMap.set(n.id, n);
+    }
+  };
+
+  g1.nodes.forEach(addNode);
+  g2.nodes.forEach(addNode);
+
+  const links = [...g1.links, ...g2.links];
+
+  return {
+    nodes: Array.from(nodeMap.values()),
+    links,
+    backLinks: {
+      ...(g1.backLinks || {}),
+      ...(g2.backLinks || {}),
+    },
+  };
+}
+
 app.post("/analyze", async (req, res) => {
   const { repoUrl } = req.body;
   if (!repoUrl) return res.status(400).json({ error: "repoUrl missing" });
@@ -61,15 +85,10 @@ app.post("/analyze", async (req, res) => {
   try {
     await simpleGit().clone(repoUrl, TEMP_DIR);
 
-    let graph;
+    const jsGraph = parseFolderJS(TEMP_DIR);
+    const pyGraph = await runPythonParser(TEMP_DIR);
 
-    if (hasPythonFiles(TEMP_DIR)) {
-      console.log("Using Python parser...");
-      graph = await runPythonParser(TEMP_DIR);
-    } else {
-      console.log("Using JS parser...");
-      graph = parseFolder(TEMP_DIR);
-    }
+    const graph = mergeGraphs(jsGraph, pyGraph);
 
     res.json({ graph });
   } catch (err) {

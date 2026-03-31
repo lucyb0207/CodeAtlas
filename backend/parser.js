@@ -19,7 +19,7 @@ export function parseFile(filePath) {
   return imports;
 }
 
-export function parseFolder(folderPath) {
+export function parseFolderJS(folderPath) {
   const graph = { nodes: [], links: [] };
   const filesMap = {}; 
   graph.backLinks = {};
@@ -94,6 +94,7 @@ export function parseFolder(folderPath) {
     const [source, target] = str.split("->");
     return { source, target };
   });
+
 
   return graph;
 }
