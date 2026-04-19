@@ -23,11 +23,42 @@ export default function App() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [fileContent, setFileContent] = useState<string | null>(null);
+  const [focusMode, setFocusMode] = useState(true);
 
   const filteredNodes =
     graphData?.nodes.filter((n) =>
       n.id.toLowerCase().includes(search.toLowerCase())
     ) || [];
+
+
+  let displayData = graphData;
+
+  if (focusMode && selectedFile && graphData) {
+    const connected = new Set<string>();
+
+    graphData.links.forEach((l) => {
+      const source = typeof l.source === "string" ? l.source : l.source.id;
+      const target = typeof l.target === "string" ? l.target : l.target.id;
+
+      if (source === selectedFile || target === selectedFile) {
+        connected.add(source);
+        connected.add(target);
+      }
+    });
+
+    connected.add(selectedFile);
+
+    displayData = {
+      nodes: graphData.nodes.filter((n) => connected.has(n.id)),
+      links: graphData.links.filter((l) => {
+        const source = typeof l.source === "string" ? l.source : l.source.id;
+        const target = typeof l.target === "string" ? l.target : l.target.id;
+
+        return connected.has(source) && connected.has(target);
+      }),
+      backLinks: graphData.backLinks,
+    };
+  }
 
   const handleAnalyze = async (url: string) => {
     const res = await fetch("http://localhost:5050/analyze", {
@@ -80,6 +111,12 @@ export default function App() {
       <div className="border-b p-4 flex items-center gap-4 bg-white">
         <h1 className="text-xl font-bold">CodeAtlas</h1>
         <RepoInput onSubmit={handleAnalyze} />
+        <button
+          onClick={() => setFocusMode(!focusMode)}
+          className="border px-3 py-1 rounded"
+        >
+          {focusMode ? "Focus: ON" : "Focus: OFF"}
+        </button>
 
         <div className="relative">
           <input
@@ -122,8 +159,9 @@ export default function App() {
 
           {graphData && (
             <div className="w-full h-full">
+              
               <Graph
-                data={graphData}
+                data={displayData}
                 onNodeClick={handleNodeClick}
                 selectedFile={selectedFile}
                 search={search}
