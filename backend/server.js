@@ -10,7 +10,7 @@ const app = express();
 app.use(cors())
 app.use(express.json());
 
-const PORT = 5050;
+const PORT = process.env.PORT || 5050;
 const TEMP_DIR = path.join(process.cwd(), "tmp"); 
 
 function runPythonParser(folderPath) {
