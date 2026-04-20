@@ -26,7 +26,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
 
   // -------------------------
-  // SAFE GRAPH COMPUTATION (OPTIMISED)
+  // SAFE DISPLAY GRAPH
   // -------------------------
   const displayData = useMemo(() => {
     if (!graphData) return null;
@@ -43,11 +43,13 @@ export default function App() {
       if (visited.has(id) || level > depth) continue;
       visited.add(id);
 
-      for (const l of graphData.links) {
+      for (const l of graphData.links || []) {
         const source =
-          typeof l.source === "string" ? l.source : l.source.id;
+          typeof l.source === "string" ? l.source : l.source?.id;
         const target =
-          typeof l.target === "string" ? l.target : l.target.id;
+          typeof l.target === "string" ? l.target : l.target?.id;
+
+        if (!source || !target) continue;
 
         if (source === id && !visited.has(target)) {
           queue.push({ id: target, level: level + 1 });
@@ -60,21 +62,21 @@ export default function App() {
     }
 
     return {
-      nodes: graphData.nodes.filter((n) => visited.has(n.id)),
-      links: graphData.links.filter((l) => {
-        const source =
-          typeof l.source === "string" ? l.source : l.source.id;
-        const target =
-          typeof l.target === "string" ? l.target : l.target.id;
+      nodes: (graphData.nodes || []).filter((n) => visited.has(n.id)),
+      links: (graphData.links || []).filter((l) => {
+        const s =
+          typeof l.source === "string" ? l.source : l.source?.id;
+        const t =
+          typeof l.target === "string" ? l.target : l.target?.id;
 
-        return visited.has(source) && visited.has(target);
+        return s && t && visited.has(s) && visited.has(t);
       }),
-      backLinks: graphData.backLinks,
+      backLinks: graphData.backLinks || {},
     };
   }, [graphData, focusMode, selectedFile, depth]);
 
   // -------------------------
-  // ANALYZE REPO
+  // ANALYZE REPO (SAFE)
   // -------------------------
   const handleAnalyze = async (url: string) => {
     try {
@@ -91,20 +93,21 @@ export default function App() {
 
       const data = await res.json();
 
-      if (!data?.graph) {
-        console.error("Invalid response:", data);
+      if (!data?.graph?.nodes || !data?.graph?.links) {
+        console.error("Invalid backend response:", data);
+        setGraphData(null);
         return;
       }
 
-      const formattedGraph = {
+      const formattedGraph: GraphData = {
         nodes: data.graph.nodes.map((n: any) =>
           typeof n === "string" ? { id: n } : n
         ),
         links: data.graph.links.map((l: any) => ({
           source:
-            typeof l.source === "string" ? l.source : l.source.id,
+            typeof l.source === "string" ? l.source : l.source?.id,
           target:
-            typeof l.target === "string" ? l.target : l.target.id,
+            typeof l.target === "string" ? l.target : l.target?.id,
         })),
         backLinks: data.graph.backLinks || {},
       };
@@ -112,13 +115,14 @@ export default function App() {
       setGraphData(formattedGraph);
     } catch (err) {
       console.error("Analyze error:", err);
+      setGraphData(null);
     } finally {
       setLoading(false);
     }
   };
 
   // -------------------------
-  // NODE CLICK
+  // NODE CLICK (SAFE)
   // -------------------------
   const handleNodeClick = async (id: string) => {
     setSelectedFile(id);
@@ -129,7 +133,8 @@ export default function App() {
       );
 
       const data = await res.json();
-      setFileContent(data.content || "");
+
+      setFileContent(data?.content || "");
     } catch (err) {
       console.error(err);
     }
@@ -212,22 +217,22 @@ export default function App() {
 
             <p className="text-xs text-gray-500">IMPORTS</p>
             <ul className="text-sm mb-3">
-              {graphData.links
+              {(graphData.links || [])
                 .filter((l) => {
                   const s =
-                    typeof l.source === "string" ? l.source : l.source.id;
+                    typeof l.source === "string" ? l.source : l.source?.id;
                   return s === selectedFile;
                 })
                 .map((l, i) => {
                   const t =
-                    typeof l.target === "string" ? l.target : l.target.id;
+                    typeof l.target === "string" ? l.target : l.target?.id;
                   return <li key={i}>→ {t}</li>;
                 })}
             </ul>
 
             <p className="text-xs text-gray-500">DEPENDENTS</p>
             <ul className="text-sm">
-              {(graphData.backLinks[selectedFile] || []).map((f, i) => (
+              {(graphData.backLinks?.[selectedFile] || []).map((f, i) => (
                 <li key={i}>← {f}</li>
               ))}
             </ul>
