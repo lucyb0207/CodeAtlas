@@ -3,8 +3,6 @@ import simpleGit from "simple-git";
 import path from "path";
 import fs from "fs-extra";
 import cors from "cors";
-import { parseFolderJS } from "./parser.js";
-import { exec } from "child_process";
 
 const app = express();
 app.use(cors());
@@ -14,125 +12,70 @@ const PORT = process.env.PORT || 8080;
 const TEMP_DIR = path.join(process.cwd(), "tmp");
 
 // -------------------------
-// IGNORE BIG DIRS
+// CACHE
 // -------------------------
-const IGNORE_DIRS = new Set([
-  "node_modules",
-  "dist",
-  "build",
-  "coverage",
-  ".git",
-  "fixtures",
-]);
-
-const MAX_FILES = 3000;
-
+const repoCache = new Map();
 
 // -------------------------
-// PYTHON PARSER
+// CLONE REPO
 // -------------------------
-function runPythonParser(folderPath) {
-  return new Promise((resolve, reject) => {
-    exec(
-      `python3 parser_py.py "${folderPath}"`,
-      { timeout: 30000 },
-      (error, stdout, stderr) => {
-        if (error) {
-          console.error("Python error:", stderr || error.message);
-          return reject(stderr || error.message);
-        }
+async function cloneRepo(repoUrl) {
+  await fs.remove(TEMP_DIR);
+  await fs.mkdir(TEMP_DIR);
 
-        try {
-          resolve(JSON.parse(stdout));
-        } catch {
-          reject("Invalid JSON from Python parser");
-        }
-      }
-    );
-  });
+  await simpleGit().clone(repoUrl, TEMP_DIR, ["--depth", "1"]);
 }
 
-
 // -------------------------
-// SAFE PY FILE DETECTION
+// LIGHTWEIGHT INDEXER
 // -------------------------
-function hasPythonFiles(dir) {
-  let found = false;
+function buildIndex(dir) {
+  const index = {};
 
-  function scan(folder) {
+  function walk(folder) {
     const items = fs.readdirSync(folder, { withFileTypes: true });
 
     for (const item of items) {
-      if (found) return;
-
       const fullPath = path.join(folder, item.name);
 
-      if (IGNORE_DIRS.has(item.name)) continue;
+      if (item.name === "node_modules" || item.name === ".git") continue;
 
       if (item.isDirectory()) {
-        scan(fullPath);
-      } else if (item.name.endsWith(".py")) {
-        found = true;
+        walk(fullPath);
+      } else {
+        if (
+          !item.name.endsWith(".js") &&
+          !item.name.endsWith(".ts") &&
+          !item.name.endsWith(".tsx") &&
+          !item.name.endsWith(".py")
+        ) continue;
+
+        try {
+          const content = fs.readFileSync(fullPath, "utf-8");
+
+          const imports = [
+            ...content.matchAll(/from\s+['"](.*?)['"]/g),
+            ...content.matchAll(/require\(['"](.*?)['"]\)/g),
+          ].map((m) => m[1]);
+
+          const relPath = path.relative(dir, fullPath);
+
+          index[relPath] = {
+            imports,
+          };
+        } catch {}
       }
     }
   }
 
-  scan(dir);
-  return found;
+  walk(dir);
+  return index;
 }
 
-
 // -------------------------
-// SAFE JS PARSER WRAPPER 
+// INIT REPO 
 // -------------------------
-function safeParseJS(dir) {
-  try {
-    return parseFolderJS(dir);
-  } catch (err) {
-    console.error("JS parser failed:", err);
-
-    return {
-      nodes: [],
-      links: [],
-      backLinks: {},
-    };
-  }
-}
-
-
-// -------------------------
-// MERGE GRAPHS SAFELY
-// -------------------------
-function mergeGraphs(g1, g2) {
-  if (!g1) return g2 || { nodes: [], links: [], backLinks: {} };
-  if (!g2) return g1;
-
-  const nodeMap = new Map();
-
-  const addNode = (n) => {
-    if (n?.id && !nodeMap.has(n.id)) {
-      nodeMap.set(n.id, n);
-    }
-  };
-
-  (g1.nodes || []).forEach(addNode);
-  (g2.nodes || []).forEach(addNode);
-
-  return {
-    nodes: Array.from(nodeMap.values()),
-    links: [...(g1.links || []), ...(g2.links || [])],
-    backLinks: {
-      ...(g1.backLinks || {}),
-      ...(g2.backLinks || {}),
-    },
-  };
-}
-
-
-// -------------------------
-// ANALYZE REPO
-// -------------------------
-app.post("/analyze", async (req, res) => {
+app.post("/repo/init", async (req, res) => {
   const { repoUrl } = req.body;
 
   if (!repoUrl) {
@@ -142,110 +85,75 @@ app.post("/analyze", async (req, res) => {
   try {
     console.log("Cloning repo...");
 
-    await fs.remove(TEMP_DIR);
-    await fs.mkdir(TEMP_DIR);
+    await cloneRepo(repoUrl);
 
-    await simpleGit().clone(repoUrl, TEMP_DIR, ["--depth", "1"]);
+    console.log("Building index...");
 
-    console.log("Parsing JS safely...");
+    const index = buildIndex(TEMP_DIR);
 
-    let jsGraph = safeParseJS(TEMP_DIR);
+    repoCache.set(repoUrl, index);
 
-    // -------------------------
-    // LIMIT LARGE REPOS 
-    // -------------------------
-
-    if (jsGraph.nodes.length > MAX_FILES) {
-      console.log(`Large repo detected → building safe subgraph`);
-
-      
-      const allowedNodes = new Set(
-        jsGraph.nodes.slice(0, MAX_FILES).map(n => n.id)
-      );
-
-      jsGraph.nodes = jsGraph.nodes.filter(n =>
-        allowedNodes.has(n.id)
-      );
-
-      jsGraph.links = (jsGraph.links || []).filter(l => {
-        const source = typeof l.source === "string" ? l.source : l.source.id;
-        const target = typeof l.target === "string" ? l.target : l.target.id;
-
-        return allowedNodes.has(source) && allowedNodes.has(target);
-      });
-
-      const newBackLinks = {};
-
-      for (const l of jsGraph.links) {
-        const source = typeof l.source === "string" ? l.source : l.source.id;
-        const target = typeof l.target === "string" ? l.target : l.target.id;
-
-        if (!newBackLinks[target]) newBackLinks[target] = [];
-        newBackLinks[target].push(source);
-      }
-
-      jsGraph.backLinks = newBackLinks;
-    }
-
-    let graph = jsGraph;
-
-    // -------------------------
-    // PYTHON SUPPORT
-    // -------------------------
-    if (hasPythonFiles(TEMP_DIR)) {
-      try {
-        console.log("Python detected → parsing...");
-
-        const pyGraph = await runPythonParser(TEMP_DIR);
-
-        if (pyGraph?.nodes && pyGraph?.links) {
-          graph = mergeGraphs(jsGraph, pyGraph);
-        }
-
-      } catch (err) {
-        console.error("Python parser failed:", err);
-      }
-    }
-
-    console.log("Returning graph...");
-
-    return res.json({ graph });
+    return res.json({
+      ok: true,
+      files: Object.keys(index).length,
+    });
 
   } catch (err) {
-    console.error("ANALYZE ERROR:", err);
-
-    return res.status(500).json({
-      error: err.message || "Internal server error",
-    });
+    console.error(err);
+    return res.status(500).json({ error: err.message });
   }
 });
 
-
 // -------------------------
-// FILE CONTENT
+// GET NODE DETAILS
 // -------------------------
-app.get("/file", async (req, res) => {
-  const { path: filePath } = req.query;
+app.get("/node", (req, res) => {
+  const { repoUrl, path } = req.query;
 
-  if (!filePath) {
-    return res.status(400).json({ error: "Missing file path" });
+  const repo = repoCache.get(repoUrl);
+
+  if (!repo) {
+    return res.status(404).json({ error: "Repo not initialized" });
   }
 
-  try {
-    const fullPath = path.join(TEMP_DIR, filePath);
-    const content = await fs.readFile(fullPath, "utf-8");
+  const node = repo[path];
 
-    return res.json({ content });
-
-  } catch (err) {
-    console.error("FILE ERROR:", err);
-
-    return res.status(500).json({
-      error: err.message,
-    });
+  if (!node) {
+    return res.json({ nodes: [], links: [] });
   }
+
+  const nodes = [{ id: path }];
+
+  const links = (node.imports || []).map((imp) => ({
+    source: path,
+    target: imp,
+  }));
+
+  return res.json({
+    nodes,
+    links,
+  });
 });
 
+// -------------------------
+// INITIAL GRAPH (ROOT VIEW)
+// -------------------------
+app.get("/graph/root", (req, res) => {
+  const { repoUrl } = req.query;
+
+  const repo = repoCache.get(repoUrl);
+
+  if (!repo) {
+    return res.status(404).json({ error: "Repo not initialized" });
+  }
+
+  const firstFile = Object.keys(repo)[0];
+
+  return res.json({
+    nodes: [{ id: firstFile }],
+    links: [],
+  });
+});
 
 // -------------------------
 app.listen(PORT, () => {
