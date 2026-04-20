@@ -24,6 +24,7 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [fileContent, setFileContent] = useState<string | null>(null);
   const [focusMode, setFocusMode] = useState(true);
+  const [depth, setDepth] = useState(2);
 
   const filteredNodes =
     graphData?.nodes.filter((n) =>
@@ -34,27 +35,38 @@ export default function App() {
   let displayData = graphData;
 
   if (focusMode && selectedFile && graphData) {
-    const connected = new Set<string>();
+    const visited = new Set<string>();
+    const queue: { id: string; level: number }[] = [
+      { id: selectedFile, level: 0 },
+    ];
 
-    graphData.links.forEach((l) => {
-      const source = typeof l.source === "string" ? l.source : l.source.id;
-      const target = typeof l.target === "string" ? l.target : l.target.id;
+    while (queue.length > 0) {
+      const { id, level } = queue.shift()!;
 
-      if (source === selectedFile || target === selectedFile) {
-        connected.add(source);
-        connected.add(target);
-      }
-    });
+      if (visited.has(id) || level > depth) continue;
+      visited.add(id);
 
-    connected.add(selectedFile);
+      graphData.links.forEach((l) => {
+        const source = typeof l.source === "string" ? l.source : l.source.id;
+        const target = typeof l.target === "string" ? l.target : l.target.id;
+
+        if (source === id && !visited.has(target)) {
+          queue.push({ id: target, level: level + 1 });
+        }
+
+        if (target === id && !visited.has(source)) {
+          queue.push({ id: source, level: level + 1 });
+        }
+      });
+    }
 
     displayData = {
-      nodes: graphData.nodes.filter((n) => connected.has(n.id)),
+      nodes: graphData.nodes.filter((n) => visited.has(n.id)),
       links: graphData.links.filter((l) => {
         const source = typeof l.source === "string" ? l.source : l.source.id;
         const target = typeof l.target === "string" ? l.target : l.target.id;
 
-        return connected.has(source) && connected.has(target);
+        return visited.has(source) && visited.has(target);
       }),
       backLinks: graphData.backLinks,
     };
@@ -117,6 +129,17 @@ export default function App() {
         >
           {focusMode ? "Focus: ON" : "Focus: OFF"}
         </button>
+        <div className="flex items-center gap-2">
+          <span className="text-sm">Depth:</span>
+          <input
+            type="range"
+            min="1"
+            max="5"
+            value={depth}
+            onChange={(e) => setDepth(Number(e.target.value))}
+          />
+          <span className="text-sm">{depth}</span>
+        </div>
 
         <div className="relative">
           <input
