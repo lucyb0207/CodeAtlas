@@ -24,9 +24,12 @@ export default function App() {
   const [focusMode, setFocusMode] = useState(true);
   const [depth, setDepth] = useState(2);
   const [loading, setLoading] = useState(false);
+  const API = import.meta.env.DEV
+    ? "http://localhost:8080"
+    : "https://codeatlas-production-e4f8.up.railway.app";
 
   // -------------------------
-  // SAFE DISPLAY GRAPH
+  // SAFE GRAPH FILTERING
   // -------------------------
   const displayData = useMemo(() => {
     if (!graphData) return null;
@@ -76,14 +79,13 @@ export default function App() {
   }, [graphData, focusMode, selectedFile, depth]);
 
   // -------------------------
-  // ANALYZE REPO (SAFE)
+  // ANALYZE REPO 
   // -------------------------
   const handleAnalyze = async (url: string) => {
     try {
       setLoading(true);
 
-      const res = await fetch(
-        "https://codeatlas-production-e4f8.up.railway.app/analyze",
+      const res = await fetch(`${API}/analyze`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -91,25 +93,32 @@ export default function App() {
         }
       );
 
-      const data = await res.json();
+      const raw = await res.json();
 
-      if (!data?.graph?.nodes || !data?.graph?.links) {
-        console.error("Invalid backend response:", data);
+      console.log("RAW RESPONSE:", raw);
+
+      // -------------------------
+      // SUPPORT BOTH BACKENDS
+      // -------------------------
+      const graph = raw.graph ?? raw;
+
+      if (!graph?.nodes || !graph?.links) {
+        console.error("Invalid graph response:", raw);
         setGraphData(null);
         return;
       }
 
       const formattedGraph: GraphData = {
-        nodes: data.graph.nodes.map((n: any) =>
+        nodes: graph.nodes.map((n: any) =>
           typeof n === "string" ? { id: n } : n
         ),
-        links: data.graph.links.map((l: any) => ({
+        links: graph.links.map((l: any) => ({
           source:
             typeof l.source === "string" ? l.source : l.source?.id,
           target:
             typeof l.target === "string" ? l.target : l.target?.id,
         })),
-        backLinks: data.graph.backLinks || {},
+        backLinks: graph.backLinks || {},
       };
 
       setGraphData(formattedGraph);
@@ -122,14 +131,14 @@ export default function App() {
   };
 
   // -------------------------
-  // NODE CLICK (SAFE)
+  // NODE CLICK
   // -------------------------
   const handleNodeClick = async (id: string) => {
     setSelectedFile(id);
 
     try {
       const res = await fetch(
-        `https://codeatlas-production-e4f8.up.railway.app/file?path=${encodeURIComponent(id)}`
+        `${API}/file?path=${encodeURIComponent(id)}`
       );
 
       const data = await res.json();

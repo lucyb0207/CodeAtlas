@@ -12,12 +12,20 @@ const PORT = process.env.PORT || 8080;
 const TEMP_DIR = path.join(process.cwd(), "tmp");
 
 // -------------------------
-// CACHE
+// IGNORE HEAVY FOLDERS
 // -------------------------
-const repoCache = new Map();
+const IGNORE = new Set([
+  "node_modules",
+  "dist",
+  "build",
+  ".git",
+  "coverage",
+  ".next",
+  ".cache",
+]);
 
 // -------------------------
-// CLONE REPO
+// CLONE 
 // -------------------------
 async function cloneRepo(repoUrl) {
   await fs.remove(TEMP_DIR);
@@ -27,7 +35,7 @@ async function cloneRepo(repoUrl) {
 }
 
 // -------------------------
-// LIGHTWEIGHT INDEXER
+// FAST INDEXER 
 // -------------------------
 function buildIndex(dir) {
   const index = {};
@@ -36,34 +44,33 @@ function buildIndex(dir) {
     const items = fs.readdirSync(folder, { withFileTypes: true });
 
     for (const item of items) {
-      const fullPath = path.join(folder, item.name);
+      if (IGNORE.has(item.name)) continue;
 
-      if (item.name === "node_modules" || item.name === ".git") continue;
+      const fullPath = path.join(folder, item.name);
 
       if (item.isDirectory()) {
         walk(fullPath);
-      } else {
-        if (
-          !item.name.endsWith(".js") &&
-          !item.name.endsWith(".ts") &&
-          !item.name.endsWith(".tsx") &&
-          !item.name.endsWith(".py")
-        ) continue;
+        continue;
+      }
 
-        try {
-          const content = fs.readFileSync(fullPath, "utf-8");
+      if (!item.name.match(/\.(js|ts|tsx|py)$/)) continue;
 
-          const imports = [
-            ...content.matchAll(/from\s+['"](.*?)['"]/g),
-            ...content.matchAll(/require\(['"](.*?)['"]\)/g),
-          ].map((m) => m[1]);
+      try {
+        const content = fs.readFileSync(fullPath, "utf8");
 
-          const relPath = path.relative(dir, fullPath);
+        const imports = [
+          ...content.matchAll(/from\s+['"](.*?)['"]/g),
+          ...content.matchAll(/require\(['"](.*?)['"]\)/g),
+        ].map(m => m[1]);
 
-          index[relPath] = {
-            imports,
-          };
-        } catch {}
+        const rel = path.relative(dir, fullPath);
+
+        index[rel] = {
+          imports: imports.slice(0, 30), 
+        };
+
+      } catch (e) {
+       
       }
     }
   }
@@ -72,10 +79,64 @@ function buildIndex(dir) {
   return index;
 }
 
+function resolveImport(file, imp, allFiles) {
+
+  if (!imp.startsWith(".")) return null;
+
+  const base = path.dirname(file);
+
+  const possiblePaths = [
+    path.normalize(path.join(base, imp)),
+    path.normalize(path.join(base, imp + ".js")),
+    path.normalize(path.join(base, imp + ".ts")),
+    path.normalize(path.join(base, imp + ".tsx")),
+    path.normalize(path.join(base, imp, "index.js")),
+    path.normalize(path.join(base, imp, "index.ts")),
+  ];
+
+  for (const p of possiblePaths) {
+    if (allFiles.has(p)) {
+      return p;
+    }
+  }
+
+  return null;
+}
+
 // -------------------------
-// INIT REPO 
+// CONVERT INDEX → GRAPH
 // -------------------------
-app.post("/repo/init", async (req, res) => {
+function indexToGraph(index) {
+  const fileList = Object.keys(index);
+  const fileSet = new Set(fileList);
+
+  const nodes = fileList.map(id => ({ id }));
+  const links = [];
+
+  for (const file of fileList) {
+    for (const imp of index[file].imports) {
+      const resolved = resolveImport(file, imp, fileSet);
+
+      if (resolved) {
+        links.push({
+          source: file,
+          target: resolved,
+        });
+      }
+    }
+  }
+
+  return {
+    nodes,
+    links,
+    backLinks: {},
+  };
+}
+
+// -------------------------
+// MAIN ROUTE
+// -------------------------
+app.post("/analyze", async (req, res) => {
   const { repoUrl } = req.body;
 
   if (!repoUrl) {
@@ -83,79 +144,43 @@ app.post("/repo/init", async (req, res) => {
   }
 
   try {
-    console.log("Cloning repo...");
-
     await cloneRepo(repoUrl);
 
-    console.log("Building index...");
-
     const index = buildIndex(TEMP_DIR);
+    const graph = indexToGraph(index);
 
-    repoCache.set(repoUrl, index);
-
-    return res.json({
-      ok: true,
-      files: Object.keys(index).length,
-    });
+    return res.json({ graph });
 
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: err.message });
+
+    return res.json({
+      graph: {
+        nodes: [],
+        links: [],
+        backLinks: {},
+      },
+      error: err.message,
+    });
   }
 });
 
 // -------------------------
-// GET NODE DETAILS
+// FILE CONTENT
 // -------------------------
-app.get("/node", (req, res) => {
-  const { repoUrl, path } = req.query;
+app.get("/file", async (req, res) => {
+  const { path: filePath } = req.query;
 
-  const repo = repoCache.get(repoUrl);
+  try {
+    const full = path.join(TEMP_DIR, filePath);
+    const content = await fs.readFile(full, "utf8");
 
-  if (!repo) {
-    return res.status(404).json({ error: "Repo not initialized" });
+    res.json({ content });
+  } catch (err) {
+    res.json({ content: "" });
   }
-
-  const node = repo[path];
-
-  if (!node) {
-    return res.json({ nodes: [], links: [] });
-  }
-
-  const nodes = [{ id: path }];
-
-  const links = (node.imports || []).map((imp) => ({
-    source: path,
-    target: imp,
-  }));
-
-  return res.json({
-    nodes,
-    links,
-  });
 });
 
-// -------------------------
-// INITIAL GRAPH (ROOT VIEW)
-// -------------------------
-app.get("/graph/root", (req, res) => {
-  const { repoUrl } = req.query;
-
-  const repo = repoCache.get(repoUrl);
-
-  if (!repo) {
-    return res.status(404).json({ error: "Repo not initialized" });
-  }
-
-  const firstFile = Object.keys(repo)[0];
-
-  return res.json({
-    nodes: [{ id: firstFile }],
-    links: [],
-  });
-});
-
-// -------------------------
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);
 });
