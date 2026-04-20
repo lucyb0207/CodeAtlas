@@ -83,12 +83,23 @@ app.post("/analyze", async (req, res) => {
   await fs.mkdir(TEMP_DIR);
 
   try {
-    await simpleGit().clone(repoUrl, TEMP_DIR);
+    await simpleGit().clone(repoUrl, TEMP_DIR, ["--depth", "1"]);
 
     const jsGraph = parseFolderJS(TEMP_DIR);
-    const pyGraph = await runPythonParser(TEMP_DIR);
 
-    const graph = mergeGraphs(jsGraph, pyGraph);
+    let graph = jsGraph;
+
+    if (hasPythonFiles(TEMP_DIR)) {
+      try {
+        const pyGraph = await runPythonParser(TEMP_DIR);
+        graph = mergeGraphs(jsGraph, pyGraph);
+      } catch (err) {
+        console.error("Python parser failed:", err);
+        
+      }
+    }
+
+    res.json({ graph });
 
     res.json({ graph });
   } catch (err) {
