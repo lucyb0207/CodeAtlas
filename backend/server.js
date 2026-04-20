@@ -13,6 +13,20 @@ app.use(express.json());
 const PORT = process.env.PORT || 8080;
 const TEMP_DIR = path.join(process.cwd(), "tmp");
 
+// -------------------------
+// IGNORE BIG DIRS
+// -------------------------
+const IGNORE_DIRS = new Set([
+  "node_modules",
+  "dist",
+  "build",
+  "coverage",
+  ".git",
+  "fixtures",
+]);
+
+const MAX_FILES = 3000;
+
 
 // -------------------------
 // PYTHON PARSER
@@ -21,7 +35,7 @@ function runPythonParser(folderPath) {
   return new Promise((resolve, reject) => {
     exec(
       `python3 parser_py.py "${folderPath}"`,
-      { timeout: 30000 }, // prevent hanging
+      { timeout: 30000 },
       (error, stdout, stderr) => {
         if (error) {
           console.error("Python error:", stderr || error.message);
@@ -30,7 +44,7 @@ function runPythonParser(folderPath) {
 
         try {
           resolve(JSON.parse(stdout));
-        } catch (e) {
+        } catch {
           reject("Invalid JSON from Python parser");
         }
       }
@@ -40,7 +54,7 @@ function runPythonParser(folderPath) {
 
 
 // -------------------------
-// DETECT PY FILES
+// SAFE PY FILE DETECTION
 // -------------------------
 function hasPythonFiles(dir) {
   let found = false;
@@ -49,7 +63,11 @@ function hasPythonFiles(dir) {
     const items = fs.readdirSync(folder, { withFileTypes: true });
 
     for (const item of items) {
+      if (found) return;
+
       const fullPath = path.join(folder, item.name);
+
+      if (IGNORE_DIRS.has(item.name)) continue;
 
       if (item.isDirectory()) {
         scan(fullPath);
@@ -65,11 +83,28 @@ function hasPythonFiles(dir) {
 
 
 // -------------------------
+// SAFE JS PARSER WRAPPER 
+// -------------------------
+function safeParseJS(dir) {
+  try {
+    return parseFolderJS(dir);
+  } catch (err) {
+    console.error("JS parser failed:", err);
+
+    return {
+      nodes: [],
+      links: [],
+      backLinks: {},
+    };
+  }
+}
+
+
+// -------------------------
 // MERGE GRAPHS SAFELY
 // -------------------------
 function mergeGraphs(g1, g2) {
-  if (!g1 && !g2) return { nodes: [], links: [], backLinks: {} };
-  if (!g1) return g2;
+  if (!g1) return g2 || { nodes: [], links: [], backLinks: {} };
   if (!g2) return g1;
 
   const nodeMap = new Map();
@@ -95,7 +130,7 @@ function mergeGraphs(g1, g2) {
 
 
 // -------------------------
-// ANALYZE REPO (MAIN ROUTE)
+// ANALYZE REPO
 // -------------------------
 app.post("/analyze", async (req, res) => {
   const { repoUrl } = req.body;
@@ -112,14 +147,23 @@ app.post("/analyze", async (req, res) => {
 
     await simpleGit().clone(repoUrl, TEMP_DIR, ["--depth", "1"]);
 
-    console.log("Parsing JS...");
+    console.log("Parsing JS safely...");
 
-    const jsGraph = parseFolderJS(TEMP_DIR);
+    let jsGraph = safeParseJS(TEMP_DIR);
+
+    // -------------------------
+    // LIMIT LARGE REPOS 
+    // -------------------------
+    if (jsGraph.nodes.length > MAX_FILES) {
+      console.log(`Large repo detected (${jsGraph.nodes.length} files) → trimming`);
+
+      jsGraph.nodes = jsGraph.nodes.slice(0, MAX_FILES);
+    }
 
     let graph = jsGraph;
 
     // -------------------------
-    // PYTHON (OPTIONAL)
+    // PYTHON SUPPORT
     // -------------------------
     if (hasPythonFiles(TEMP_DIR)) {
       try {
@@ -144,14 +188,14 @@ app.post("/analyze", async (req, res) => {
     console.error("ANALYZE ERROR:", err);
 
     return res.status(500).json({
-      error: err.message || "Internal server error"
+      error: err.message || "Internal server error",
     });
   }
 });
 
 
 // -------------------------
-// FILE CONTENT ROUTE
+// FILE CONTENT
 // -------------------------
 app.get("/file", async (req, res) => {
   const { path: filePath } = req.query;
@@ -170,7 +214,7 @@ app.get("/file", async (req, res) => {
     console.error("FILE ERROR:", err);
 
     return res.status(500).json({
-      error: err.message
+      error: err.message,
     });
   }
 });
