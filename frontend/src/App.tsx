@@ -19,19 +19,11 @@ type GraphData = {
 export default function App() {
   const [graphData, setGraphData] = useState<GraphData>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+  const [search] = useState("");
   const [fileContent, setFileContent] = useState<string | null>(null);
   const [focusMode, setFocusMode] = useState(true);
   const [depth, setDepth] = useState(2);
   const [loading, setLoading] = useState(false);
-
-  // -------------------------
-  // SEARCH FILTER
-  // -------------------------
-  const filteredNodes =
-    graphData?.nodes.filter((n) =>
-      n.id.toLowerCase().includes(search.toLowerCase())
-    ) || [];
 
   // -------------------------
   // SAFE GRAPH COMPUTATION (OPTIMISED)
