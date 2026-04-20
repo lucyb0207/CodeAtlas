@@ -154,10 +154,37 @@ app.post("/analyze", async (req, res) => {
     // -------------------------
     // LIMIT LARGE REPOS 
     // -------------------------
-    if (jsGraph.nodes.length > MAX_FILES) {
-      console.log(`Large repo detected (${jsGraph.nodes.length} files) → trimming`);
 
-      jsGraph.nodes = jsGraph.nodes.slice(0, MAX_FILES);
+    if (jsGraph.nodes.length > MAX_FILES) {
+      console.log(`Large repo detected → building safe subgraph`);
+
+      
+      const allowedNodes = new Set(
+        jsGraph.nodes.slice(0, MAX_FILES).map(n => n.id)
+      );
+
+      jsGraph.nodes = jsGraph.nodes.filter(n =>
+        allowedNodes.has(n.id)
+      );
+
+      jsGraph.links = (jsGraph.links || []).filter(l => {
+        const source = typeof l.source === "string" ? l.source : l.source.id;
+        const target = typeof l.target === "string" ? l.target : l.target.id;
+
+        return allowedNodes.has(source) && allowedNodes.has(target);
+      });
+
+      const newBackLinks = {};
+
+      for (const l of jsGraph.links) {
+        const source = typeof l.source === "string" ? l.source : l.source.id;
+        const target = typeof l.target === "string" ? l.target : l.target.id;
+
+        if (!newBackLinks[target]) newBackLinks[target] = [];
+        newBackLinks[target].push(source);
+      }
+
+      jsGraph.backLinks = newBackLinks;
     }
 
     let graph = jsGraph;
