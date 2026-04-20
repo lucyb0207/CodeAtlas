@@ -73,7 +73,7 @@ export default function App() {
   }
 
   const handleAnalyze = async (url: string) => {
-    const res = await fetch("http://localhost:5050/analyze", {
+    const res = await fetch("http://codeatlas-production-e4f8.up.railway.app/analyze", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -101,7 +101,7 @@ export default function App() {
     setSelectedFile(id);
 
     const res = await fetch(
-      `http://localhost:5050/file?path=${encodeURIComponent(id)}`
+      `http://codeatlas-production-e4f8.up.railway.app/file?path=${encodeURIComponent(id)}`
     );
 
     const data = await res.json();
