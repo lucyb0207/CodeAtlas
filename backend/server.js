@@ -3,6 +3,7 @@ import simpleGit from "simple-git";
 import path from "path";
 import fs from "fs-extra";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 
 const app = express();
 app.use(cors());
@@ -23,6 +24,17 @@ const IGNORE = new Set([
   ".next",
   ".cache",
 ]);
+
+// --------------------
+// RATE LIMITER ON ANALYSE
+// -------------------------
+const analyzeLimiter = rateLimit({
+  windowMs: 60 * 1000, 
+  max: 5,
+  message: {
+    error: "Too many repo analyses. Slow down.",
+  },
+});
 
 // -------------------------
 // CLONE 
@@ -136,7 +148,8 @@ function indexToGraph(index) {
 // -------------------------
 // MAIN ROUTE
 // -------------------------
-app.post("/analyze", async (req, res) => {
+
+app.post("/analyze", analyzeLimiter, async (req, res) => {
   const { repoUrl } = req.body;
 
   if (!repoUrl) {

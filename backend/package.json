@@ -7,7 +7,6 @@
     "start": "node server.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
-
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -17,6 +16,7 @@
     "@babel/traverse": "^7.29.0",
     "cors": "^2.8.6",
     "express": "^4.18.2",
+    "express-rate-limit": "^8.3.2",
     "fs-extra": "^11.1.1",
     "simple-git": "^3.33.0"
   },
@@ -26,4 +26,3 @@
     "jest": "^30.3.0"
   }
 }
-
