@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import RepoInput from "./components/RepoInput";
 import Graph from "./components/Graph";
 import Editor from "@monaco-editor/react";
@@ -31,10 +31,20 @@ export default function App() {
   const [depth, setDepth] = useState(2);
   const [loading, setLoading] = useState(false);
   const [copyMessage, setCopyMessage] = useState(FileCopyMessages.DEFAULT);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null); // For clearing timer
 
   const API = import.meta.env.DEV
     ? "http://localhost:8080"
     : "https://codeatlas-production-e4f8.up.railway.app";
+
+  // Message timeout cleanup on unmount for the copy file path button
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // -------------------------
   // SAFE GRAPH FILTERING
@@ -171,7 +181,13 @@ export default function App() {
 
   // Copies selected file path
   // Presents a success message on success, and a failure message otherwise (both for 1000ms)
-  const copyFilePath = async () => {    
+  const copyFilePath = async () => {
+    // Clearing timer
+    if (copyTimeoutRef.current) {
+      clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = null;
+    }
+
     try {
       await navigator.clipboard.writeText(selectedFile || "");
 
@@ -181,11 +197,11 @@ export default function App() {
       setCopyMessage(FileCopyMessages.FAILURE);
     }
 
-    setTimeout(() => {
+    copyTimeoutRef.current = setTimeout(() => {
       setCopyMessage(FileCopyMessages.DEFAULT);
+      copyTimeoutRef.current = null;
     }, 1000);
-    
-  }
+  };
 
   // -------------------------
   // UI
