@@ -249,11 +249,16 @@ export default function App() {
         {/* SIDEBAR */}
         {selectedFile && graphData && (
           <div className="w-80 border-l bg-white p-4 overflow-auto">
-            <h2 className="font-bold mb-3 inline-block">File Inspector</h2>
-            <p 
-              className="inline text-sm float-right select-none cursor-pointer border border-black p-0.5 rounded-md hover:text-gray-600"
-              onClick={copyFilePath}
-            >{copyMessage}</p>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-bold">File Inspector</h2>
+              <button
+                type="button"
+                className="inline text-sm float-right select-none cursor-pointer border border-black p-0.5 rounded-md hover:text-gray-600"
+                onClick={copyFilePath}
+              >
+                {copyMessage}
+              </button>
+            </div>
 
             <p className="text-xs text-gray-500">FILE</p>
             <p className="font-mono text-sm mb-3">{selectedFile}</p>
