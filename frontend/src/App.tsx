@@ -16,6 +16,12 @@ type GraphData = {
   backLinks: Record<string, string[]>;
 } | null;
 
+const FileCopyMessages = {
+  DEFAULT: "Copy File Path",
+  SUCCESS: "Copied",
+  FAILURE: "Failure"
+}
+
 export default function App() {
   const [graphData, setGraphData] = useState<GraphData>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -24,6 +30,8 @@ export default function App() {
   const [focusMode, setFocusMode] = useState(true);
   const [depth, setDepth] = useState(2);
   const [loading, setLoading] = useState(false);
+  const [copyMessage, setCopyMessage] = useState(FileCopyMessages.DEFAULT);
+
   const API = import.meta.env.DEV
     ? "http://localhost:8080"
     : "https://codeatlas-production-e4f8.up.railway.app";
@@ -158,6 +166,28 @@ export default function App() {
   };
 
   // -------------------------
+  // File Inspector Helpers
+  // -------------------------
+
+  // Copies selected file path
+  // Presents a success message on success, and a failure message otherwise (both for 1000ms)
+  const copyFilePath = async () => {    
+    try {
+      await navigator.clipboard.writeText(selectedFile || "");
+
+      setCopyMessage(FileCopyMessages.SUCCESS);
+    } catch (er) {
+      console.error("Failed to Copy File Path", er);
+      setCopyMessage(FileCopyMessages.FAILURE);
+    }
+
+    setTimeout(() => {
+      setCopyMessage(FileCopyMessages.DEFAULT);
+    }, 1000);
+    
+  }
+
+  // -------------------------
   // UI
   // -------------------------
   return (
@@ -222,8 +252,8 @@ export default function App() {
             <h2 className="font-bold mb-3 inline-block">File Inspector</h2>
             <p 
               className="inline text-sm float-right select-none cursor-pointer border border-black p-0.5 rounded-md hover:text-gray-600"
-              onClick={() => {navigator.clipboard.writeText(selectedFile || "")}}
-            >Copy File Path</p>
+              onClick={copyFilePath}
+            >{copyMessage}</p>
 
             <p className="text-xs text-gray-500">FILE</p>
             <p className="font-mono text-sm mb-3">{selectedFile}</p>
