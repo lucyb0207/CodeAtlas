@@ -19,7 +19,7 @@ type GraphData = {
 const FileCopyMessages = {
   DEFAULT: "Copy File Path",
   SUCCESS: "Copied",
-  FAILURE: "Failure"
+  FAILURE: "Copy failed"
 }
 
 export default function App() {
