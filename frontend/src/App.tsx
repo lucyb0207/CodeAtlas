@@ -219,7 +219,11 @@ export default function App() {
         {/* SIDEBAR */}
         {selectedFile && graphData && (
           <div className="w-80 border-l bg-white p-4 overflow-auto">
-            <h2 className="font-bold mb-3">File Inspector</h2>
+            <h2 className="font-bold mb-3 inline-block">File Inspector</h2>
+            <p 
+              className="inline text-sm float-right select-none cursor-pointer border border-black p-0.5 rounded-md hover:text-gray-600"
+              onClick={() => {navigator.clipboard.writeText(selectedFile || "")}}
+            >Copy File Path</p>
 
             <p className="text-xs text-gray-500">FILE</p>
             <p className="font-mono text-sm mb-3">{selectedFile}</p>
