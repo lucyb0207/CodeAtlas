@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import RepoInput from "./components/RepoInput";
 import Graph from "./components/Graph";
 import Editor from "@monaco-editor/react";
@@ -19,6 +19,7 @@ type GraphData = {
 export default function App() {
   const [graphData, setGraphData] = useState<GraphData>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [search] = useState("");
   const [fileContent, setFileContent] = useState<string | null>(null);
   const [focusMode, setFocusMode] = useState(true);
@@ -149,6 +150,13 @@ export default function App() {
     }
   };
 
+  const handleCopyPath = useCallback(() => {
+    if (!selectedFile) return;
+    navigator.clipboard.writeText(selectedFile);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }, [selectedFile]);
+
   const getLanguage = (file: string | null) => {
     if (!file) return "plaintext";
     if (file.endsWith(".ts") || file.endsWith(".tsx")) return "typescript";
@@ -222,7 +230,16 @@ export default function App() {
             <h2 className="font-bold mb-3">File Inspector</h2>
 
             <p className="text-xs text-gray-500">FILE</p>
-            <p className="font-mono text-sm mb-3">{selectedFile}</p>
+            <div className="flex items-center gap-1 mb-3">
+              <span className="font-mono text-sm flex-1 truncate">{selectedFile}</span>
+              <button
+                onClick={handleCopyPath}
+                className="text-xs text-gray-400 hover:text-gray-700 px-1 py-0.5 rounded shrink-0"
+                title="Copy file path"
+              >
+                {copied ? "✓" : "Copy"}
+              </button>
+            </div>
 
             <p className="text-xs text-gray-500">IMPORTS</p>
             <ul className="text-sm mb-3">

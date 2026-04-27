@@ -1,117 +1,186 @@
+![Developer Banner](https://ishan-rest.vercel.app/svg/banner/dev5/CodeAtlas)
 
-![Developer Banner 5](https://ishan-rest.vercel.app/svg/banner/dev5/CodeAtlas)
 # CodeAtlas
 
 ## Turn any GitHub repository into an interactive dependency graph
 
-CodeAtlas turns any GitHub repository into an interactive dependency graph, allowing you to visualise and explore the structure of a codebase in real time. It currently supports JavaScript, TypeScript and Python, with planned support for languages including C++ and Java.
+CodeAtlas is a full-stack developer tool that transforms GitHub repositories into **interactive dependency graphs**, enabling visual exploration of code structure, module relationships, and architectural flow.
 
-<img width="1054" height="815" alt="Screenshot 2026-03-21 at 08 56 39" src="https://github.com/user-attachments/assets/f11efaba-b8b4-4a1d-b93d-26e499ae0296" />
+It helps developers understand unfamiliar codebases faster by turning static files into an explorable system map.
+
+---
+
+## Preview
+
+<img width="1512" height="861" alt="Screenshot 2026-04-21 at 20 29 31" src="https://github.com/user-attachments/assets/8309c60d-53a4-49c2-8f0a-b1a107040ca5" />
 
 
-## Features
+---
 
-- Interactive dependency graph visualisation powered by D3.js
-- Automatic extraction of import and dependecy relationships across files
-- Interactive nodes for exploration of repository structure
-- Integrated Monaco Editor for live code preview
-- Fast search across files and graph nodes
-- Multi-language support (JavaScript, TypeScript, Python)
+## Key Features
+
+### Dependency Graph Visualisation
+- Interactive force-directed graph powered by D3.js
+- Visual representation of file-level dependencies
+- Real-time node interaction and navigation
+
+### AST-Based Code Analysis
+- Parses source code using Abstract Syntax Trees (AST)
+- Extracts import relationships across modules
+- Language-aware parsing system
+
+### Code Exploration
+- Clickable nodes to inspect file contents
+- Monaco Editor integration for syntax-highlighted preview
+- Import + dependency side panel
+
+### Navigation Tools
+- Focus mode (local subgraph exploration)
+- Depth control for traversal limiting
+- Search support for files and nodes
+
+---
 
 ## Supported Languages
 
+Current support:
 - JavaScript
 - TypeScript
-- Python 
+- Python
 
+Planned:
+- Go
+- Java
+- C++
+- Rust
+
+---
+
+## Architecture Overview
+GitHub Repo URL
+ →
+Backend (Node.js + Express)
+ →
+Repository Cloning (simple-git)
+ →
+AST Parsing Layer (@babel/parser, Python AST)
+ →
+Dependency Graph Builder
+ →
+JSON Graph API
+ →
+Frontend Visualisation (React + D3.js)
+
+---
 
 ## How It Works
 
-1. A GitHub repository URL is provided by the user
-2. The repository is cloned locally using `simple-git`
-3. Source files are then analysed using language-specific AST parsers
-4. Import and dependency relationships are extracted and structured into a graph model
-5. The dependency graph is rendered interactively using D3.js 
+1. User submits a GitHub repository URL
+2. Backend clones the repository locally (shallow clone for performance)
+3. Source files are scanned and parsed using AST parsers
+4. Import statements are extracted and converted into graph edges
+5. Nodes and relationships are structured into a graph model
+6. Frontend renders the graph using D3.js force simulation
 
+---
 
 ## Tech Stack
 
-Frontend:
-- ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
-- ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
-- ![D3.js](https://img.shields.io/badge/D3.JS-%23000000?style=for-the-badge&logo=D3&logoColor=#ff823e)
-- Monaco Editor
-
-Backend:
-- ![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
-- ![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)
-- simple-git
-- @babel/parser
-- Python (AST Parsing)
-
-## Screenshot:
-
-<img width="1576" height="830" alt="Screenshot 2026-03-21 at 08 57 19" src="https://github.com/user-attachments/assets/68be7f91-f5b7-4fca-80ed-939e160a4d30" />
-
-
-## Installation
-
-### Prerequisites
-
-Before running CodeAtlas, make sure you have installed:
-- Node.js (v18 or higher)
-- npm (comes with Node.js)
-- Python 3.10+
-- Git (latest version recommended)
-
-To verify installation:
-```bash
-node -v
-npm -v
-python --version
-git --version
-```
+### Frontend
+- React + TypeScript
+- D3.js (graph rendering engine)
+- Monaco Editor (code viewer)
 
 ### Backend
-```bash
-cd backend
-npm install
-node server.js
-```
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
+- Node.js + Express
+- simple-git (repo cloning)
+- @babel/parser (AST parsing)
+- fs-extra (file system utilities)
 
-### Installation Notes
-- The backend must be running before starting the frontend
-- Make sure ports used by backend/frontend are not already in use
-- Python must be available in your system path for AST parsing
+---
 
-## Why I Built CodeAtlas
+## Design Goals
 
-Understanding large codebases is one of the biggest challenges in software development. When working with unfamiliar repositories, developers often need to manually trace imports and navigate between files to understand how everything connects.
+CodeAtlas was built to solve a core developer problem:
 
-I built CodeAtlas to solve this problem by turning static code into a visual system. By representing files and their relationships as an interactive graph, developers can explore structure more intuitively and reduce the time spent understanding complex projects.
+> Understanding large codebases is harder than writing them.
 
-This project also allowed me to explore:
-- Abstract Syntax Tree (AST) parsing across multiple languages  
-- Graph data structures and dependency modelling  
-- Building full-stack tools with real-world developer use cases  
+Instead of manually tracing imports or navigating folders, CodeAtlas allows developers to:
+- Visually explore architecture
+- Identify dependency chains quickly
+- Understand system structure at a glance
+
+---
+
+## Performance Notes
+
+- Shallow cloning reduces repository load time
+- File filtering excludes heavy directories (`node_modules`, `dist`, etc.)
+- Import parsing is limited for performance safety
+- Graph rendering optimised for medium-scale repositories
+
+---
 
 ## Future Improvements
 
-- Extend language support to other languages, starting with C++, Java and Go through additional parsing pipelines
-- Implement real-time analysis using GitHub API instead of local cloning
-- Enhance AST parsing to include function-level and class-level dependencies
-- Introduce hierarchical graph views (folder -> file -> module) for better scalability
-- Optimise graph rendering for large repositories using progressive loading techniques
+### Core Enhancements
+- Folder-level and module-level graph abstraction
+- Function and class-level dependency mapping
+- Smarter cross-language resolution engine
 
-## Contributions
+### Scaling Improvements
+- Streaming graph rendering for large repos
+- Incremental parsing instead of full repo reload
+- Caching layer for repeated repository analysis
 
-Any contributions you make are greatly appreciated.
+### Language Expansion
+- Go AST pipeline
+- Java class dependency mapping
+- C++ include graph parsing
 
-If you have a suggestion that would make this better, please fork the repo and create a pull request. Don't forget to give the project a star! Thanks again!
+---
+
+## 🤝 Contributions
+
+Contributions are welcome and appreciated.
+
+If you want to improve CodeAtlas:
+- Fork the repository
+- Create a feature branch
+- Submit a pull request
+
+---
+
+## ⭐ Support
+
+If you find CodeAtlas useful:
+- Star the repository
+- Share it with developers
+- Try it on real-world codebases
+- Reporting issues or suggesting improvements
+
+---
+
+## 📌 Status
+
+Early-stage but actively developed system focused on real-world repository understanding and developer tooling.
+---
+
+## 🤝 Sponsors
+
+CodeAtlas is built and maintained in public.
+
+As the project grows, infrastructure costs (repo processing, graph computation, hosting, and API usage) increase significantly. Sponsors help keep the core platform free and accessible while supporting continued development.
+
+### 💡 Why sponsor?
+
+Supporting CodeAtlas helps fund:
+- Backend compute for repository analysis
+- Hosting and scaling infrastructure
+- Development of new language parsers (Go, Java, C++)
+- New features like module-level graphs and AI-assisted code understanding
+
+---
+
+> Every bit of support helps keep CodeAtlas growing.
 
