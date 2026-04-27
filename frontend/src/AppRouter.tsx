@@ -3,6 +3,7 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Analyze from "./pages/Analyze";
+import { Analytics } from "@vercel/analytics/next"
 
 export default function AppRouter() {
   return (
@@ -13,6 +14,8 @@ export default function AppRouter() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/analyze" element={<Analyze />} />
       </Routes>
+
+      <Analytics />
     </BrowserRouter>
   );
 }
