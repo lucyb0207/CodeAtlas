@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 
-// ---- Types ----
 type Node = {
   id: string;
   x?: number;
@@ -19,7 +18,7 @@ type GraphData = {
   nodes: Node[];
   links: Link[];
   backLinks: Record<string, string[]>;
-}| null;
+} | null;
 
 export default function Graph({
   data,
@@ -34,6 +33,7 @@ export default function Graph({
 }) {
   const ref = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     if (!data || !ref.current) return;
 
@@ -41,13 +41,11 @@ export default function Graph({
     svg.selectAll("*").remove();
 
     const rect = containerRef.current?.getBoundingClientRect();
-
     if (!rect) return;
 
     const width = rect.width;
     const height = rect.height;
 
-    // ---- zoom container ----
     const g = svg.append("g");
 
     svg.call(
@@ -56,19 +54,17 @@ export default function Graph({
       })
     );
 
-    // ---- nodes/links ----
     const nodes: Node[] =
       data.nodes.length > 0 ? data.nodes : [{ id: "placeholder" }];
-
     const links: Link[] = data.links ?? [];
 
-    // ---- color by folder ----
+    // ---- color by folder —---
     const color = (d: Node) => {
-      if (d.id.includes("components")) return "#8b5cf6";
-      if (d.id.includes("pages")) return "#22c55e";
-      if (d.id.includes("utils")) return "#f59e0b";
-      if (d.id.includes("server")) return "#ef4444";
-      return "#3b82f6";
+      if (d.id.includes("components")) return "#818cf8"; // indigo
+      if (d.id.includes("pages"))      return "#34d399"; // emerald
+      if (d.id.includes("utils"))      return "#fbbf24"; // amber
+      if (d.id.includes("server"))     return "#f87171"; // red
+      return "#38bdf8";                                  // sky 
     };
 
     function getId(val: any) {
@@ -76,33 +72,18 @@ export default function Graph({
     }
 
     const connected = new Set<string>();
-
     if (selectedFile) {
       links.forEach((l: any) => {
         const source = getId(l.source);
         const target = getId(l.target);
-
-        if (source === selectedFile) {
-          connected.add(target); // imports
-        }
-
-        if (target === selectedFile) {
-          connected.add(source); // dependents
-        }
+        if (source === selectedFile) connected.add(target);
+        if (target === selectedFile) connected.add(source);
       });
     }
 
-
-    // ---- simulation ----
     const simulation = d3
       .forceSimulation<Node>(nodes)
-      .force(
-        "link",
-        d3
-          .forceLink<Node, Link>(links)
-          .id((d) => d.id)
-          .distance(70)
-      )
+      .force("link", d3.forceLink<Node, Link>(links).id((d) => d.id).distance(70))
       .force("charge", d3.forceManyBody().strength(-120))
       .force("center", d3.forceCenter(width / 2, height / 2))
       .force("x", d3.forceX(width / 2).strength(0.05))
@@ -116,25 +97,19 @@ export default function Graph({
       .enter()
       .append("line")
       .attr("stroke", (l: any) => {
-        if (!selectedFile) return "#999";
-
+        if (!selectedFile) return "rgba(56,189,248,0.2)";
         const source = getId(l.source);
         const target = getId(l.target);
-
-        if (source === selectedFile) return "#4dabf7"; // imports
-        if (target === selectedFile) return "#51cf66"; // dependents
-
-        return "#eee"; // faded
+        if (source === selectedFile) return "#38bdf8"; // imports → cyan
+        if (target === selectedFile) return "#818cf8"; // dependents → indigo
+        return "rgba(255,255,255,0.06)";              // faded
       })
       .attr("stroke-width", (l: any) => {
         const source = getId(l.source);
         const target = getId(l.target);
-
-        if (source === selectedFile || target === selectedFile) return 2.5;
-        return 1;
+        return source === selectedFile || target === selectedFile ? 2 : 1;
       })
-      .attr("stroke-opacity", 0.6)
-      .attr("stroke-width", 1.5);
+      .attr("stroke-opacity", 0.8);
 
     // ---- nodes ----
     const node = g
@@ -142,20 +117,21 @@ export default function Graph({
       .data(nodes)
       .enter()
       .append("circle")
-      .attr("r", 12)
+      .attr("r", 10)
       .attr("fill", (d) => {
-        if (search && d.id.toLowerCase().includes(search.toLowerCase())) {
-          return "#ffd43b"; 
-        }
-
-        if (!selectedFile) return "steelblue";
-
-        if (d.id === selectedFile) return "#ff5555";
-
-        if (connected.has(d.id)) return "#4dabf7";
-
-        return "#ddd";
+        if (search && d.id.toLowerCase().includes(search.toLowerCase()))
+          return "#fbbf24";
+        if (!selectedFile) return color(d);
+        if (d.id === selectedFile) return "#38bdf8";
+        if (connected.has(d.id)) return "#818cf8";
+        return "rgba(255,255,255,0.08)";
       })
+      .attr("stroke", (d: any) =>
+        d.id === selectedFile
+          ? "rgba(56,189,248,0.8)"
+          : "rgba(255,255,255,0.08)"
+      )
+      .attr("stroke-width", (d: any) => (d.id === selectedFile ? 2.5 : 1))
       .call(
         d3
           .drag<SVGCircleElement, Node>()
@@ -176,34 +152,25 @@ export default function Graph({
       )
       .attr("opacity", (d: any) => {
         if (!selectedFile) return 1;
-
         if (d.id === selectedFile || connected.has(d.id)) return 1;
-
-        return 0.3;
+        return 0.2;
       });
 
     node.on("click", (_, clicked) => {
       const connected = new Set<string>();
-
       links.forEach((l: any) => {
         const s = (l.source as any).id || l.source;
         const t = (l.target as any).id || l.target;
-
         if (s === clicked.id || t === clicked.id) {
           connected.add(s);
           connected.add(t);
         }
       });
-
-      node.attr("opacity", (n: Node) =>
-        connected.has(n.id) ? 1 : 0.15
-      );
-
+      node.attr("opacity", (n: Node) => (connected.has(n.id) ? 1 : 0.15));
       link.attr("opacity", (l: any) => {
         const s = (l.source as any).id || l.source;
         const t = (l.target as any).id || l.target;
-
-        return s === clicked.id || t === clicked.id ? 1 : 0.1;
+        return s === clicked.id || t === clicked.id ? 1 : 0.08;
       });
     });
 
@@ -214,8 +181,9 @@ export default function Graph({
       .enter()
       .append("text")
       .text((d) => d.id)
-      .attr("font-size", 11)
-      .attr("fill", "#333")
+      .attr("font-size", 10)
+      .attr("font-family", "JetBrains Mono, monospace")
+      .attr("fill", "rgba(148,163,184,0.75)")
       .attr("pointer-events", "none")
       .attr("dx", 14)
       .attr("dy", 4);
@@ -223,7 +191,7 @@ export default function Graph({
     // ---- hover ----
     node.on("mouseover", (_, hovered) => {
       node.attr("fill", (n: Node) =>
-        n.id === hovered.id ? "orange" : color(n)
+        n.id === hovered.id ? "#e2e8f0" : color(n)
       );
     });
 
@@ -231,14 +199,9 @@ export default function Graph({
       node.attr("fill", color);
     });
 
-    // ---- click ----
     node.on("click", (_, d) => {
       onNodeClick?.(d.id);
     });
-
-    node.attr("stroke", (d: any) =>
-      d.id === selectedFile ? "black" : null
-    );
 
     // ---- tick ----
     simulation.on("tick", () => {
@@ -247,16 +210,11 @@ export default function Graph({
         .attr("y1", (d: any) => (d.source as Node).y!)
         .attr("x2", (d: any) => (d.target as Node).x!)
         .attr("y2", (d: any) => (d.target as Node).y!);
-
       node.attr("cx", (d) => d.x!).attr("cy", (d) => d.y!);
-
       text.attr("x", (d) => d.x!).attr("y", (d) => d.y!);
     });
 
-    // ---- auto cleanup ----
-    return () => {
-      simulation.stop();
-    };
+    return () => { simulation.stop(); };
   }, [data, selectedFile, search]);
 
   return (
@@ -265,7 +223,7 @@ export default function Graph({
         ref={ref}
         width="100%"
         height="100%"
-        style={{ border: "1px solid #ddd", background: "#fafafa" }}
+        style={{ background: "#050810" }}
       />
     </div>
   );
