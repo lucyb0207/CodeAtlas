@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
+import "../styles/landing.css";
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -76,99 +77,6 @@ export default function Landing() {
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@300;400&display=swap');
-
-        .ca-root {
-          background: #050810;
-          color: #e8eaf0;
-          font-family: 'Syne', sans-serif;
-          min-height: 100vh;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-        }
-        .ca-canvas { position: fixed; inset: 0; z-index: 0; opacity: 0.55; }
-        .ca-grid {
-          position: fixed; inset: 0; z-index: 0; pointer-events: none;
-          background-image:
-            linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
-          background-size: 60px 60px;
-        }
-        .ca-orb {
-          position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0;
-        }
-        .ca-orb1 {
-          width: 400px; height: 400px;
-          background: radial-gradient(circle, rgba(56,189,248,0.12) 0%, transparent 70%);
-          top: -100px; right: -80px;
-        }
-        .ca-orb2 {
-          width: 300px; height: 300px;
-          background: radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 70%);
-          bottom: -80px; left: -60px;
-        }
-        .ca-container {
-          position: relative; z-index: 10;
-          display: flex; flex-direction: column; align-items: center; text-align: center;
-          padding: 2rem; max-width: 680px;
-          animation: caFadeUp 0.9s cubic-bezier(0.16,1,0.3,1) both;
-        }
-        @keyframes caFadeUp {
-          from { opacity: 0; transform: translateY(28px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .ca-eyebrow {
-          font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
-          font-weight: 300; letter-spacing: 0.22em; text-transform: uppercase;
-          color: #38bdf8; border: 1px solid rgba(56,189,248,0.25);
-          padding: 0.35rem 1rem; border-radius: 999px; margin-bottom: 2.2rem;
-          background: rgba(56,189,248,0.06);
-          animation: caFadeUp 0.9s 0.1s cubic-bezier(0.16,1,0.3,1) both;
-        }
-        .ca-h1 {
-          font-size: clamp(3.8rem, 10vw, 6rem); font-weight: 800;
-          line-height: 0.95; letter-spacing: -0.03em; margin-bottom: 1.6rem;
-          animation: caFadeUp 0.9s 0.18s cubic-bezier(0.16,1,0.3,1) both;
-          background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-        }
-        .ca-accent {
-          background: linear-gradient(90deg, #38bdf8, #818cf8);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-        }
-        .ca-p {
-          font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 300;
-          line-height: 1.75; color: #94a3b8; max-width: 440px; margin-bottom: 3rem;
-          animation: caFadeUp 0.9s 0.26s cubic-bezier(0.16,1,0.3,1) both;
-        }
-        .ca-btn-group {
-          display: flex; flex-direction: column; align-items: center; gap: 0.9rem;
-          animation: caFadeUp 0.9s 0.34s cubic-bezier(0.16,1,0.3,1) both;
-        }
-        .ca-btn {
-          position: relative; font-family: 'Syne', sans-serif; font-size: 0.9rem;
-          font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-          background: linear-gradient(135deg, #38bdf8, #6366f1);
-          color: #fff; border: none; padding: 0.85rem 2.6rem; border-radius: 4px;
-          cursor: pointer; overflow: hidden;
-          transition: transform 0.18s ease, box-shadow 0.18s ease;
-          box-shadow: 0 0 0 1px rgba(56,189,248,0.3), 0 8px 32px rgba(56,189,248,0.18);
-        }
-        .ca-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 0 0 1px rgba(56,189,248,0.5), 0 16px 48px rgba(56,189,248,0.28);
-        }
-        .ca-btn:active { transform: translateY(0); }
-        .ca-sub {
-          font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
-          color: #475569; letter-spacing: 0.1em;
-        }
-      `}</style>
-
       <div className="ca-root">
         <canvas ref={canvasRef} className="ca-canvas" />
         <div className="ca-grid" />
