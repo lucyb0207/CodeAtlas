@@ -30,7 +30,7 @@ export default function App() {
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   }, [selectedFile]);
-
+  
   const handleOpenInGitHub = useCallback((): void => {
     if (!selectedFile || !repoUrl) return;
 
@@ -41,21 +41,6 @@ export default function App() {
 
     window.open(url, "_blank");
   }, [selectedFile, repoUrl]);
-
-  const handleOpenInVSCode = useCallback((): void => {
-    if (!selectedFile || !repoUrl) return;
-
-    const cleanRepoUrl = repoUrl.replace(/\.git$/, "");
-    const vscodeUrl = `vscode://file/${selectedFile}`;
-    const githubUrl = `${cleanRepoUrl}/blob/main/${selectedFile}`;
-
-    window.location.href = vscodeUrl;
-
-    setTimeout(() => {
-      window.open(githubUrl, "_blank");
-    }, 500);
-  }, [selectedFile, repoUrl]);
-
 
   const displayData = useMemo(() => {
     if (!graphData) return null;
@@ -131,6 +116,7 @@ export default function App() {
     if (file.endsWith(".py")) return "python";
     return "plaintext";
   };
+
 
   return (
     <>
@@ -224,16 +210,8 @@ export default function App() {
                   >
                  GitHub
                   </button>
-                  <div className="ca-copy"> | </div>
-                  <button
-                    onClick={handleOpenInVSCode}
-                    className="ca-copy"
-                    title="Open in VS Code"
-                    disabled={!selectedFile}
-                  >
-                    VSCode
-                  </button>
                 </div>
+               
 
                 <div className="ca-label">Imports</div>
                 <ul className="ca-list">
