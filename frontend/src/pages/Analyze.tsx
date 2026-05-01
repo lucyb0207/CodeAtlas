@@ -17,6 +17,8 @@ export default function App() {
   const [focusMode, setFocusMode] = useState(true);
   const [depth, setDepth] = useState(2);
   const [loading, setLoading] = useState(false);
+  const [repoUrl, setRepoUrl] = useState<string>("");
+
   const API = import.meta.env.DEV
     ? "http://localhost:8080"
     : "https://codeatlas-production-e4f8.up.railway.app";
@@ -28,6 +30,31 @@ export default function App() {
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   }, [selectedFile]);
+
+  const handleOpenInGitHub = useCallback((): void => {
+    if (!selectedFile || !repoUrl) return;
+
+    const cleanRepoUrl = repoUrl.replace(/\.git$/, "");
+    const branch = "main";
+
+    const url = `${cleanRepoUrl}/blob/${branch}/${selectedFile}`;
+
+    window.open(url, "_blank");
+  }, [selectedFile, repoUrl]);
+
+  const handleOpenInVSCode = useCallback((): void => {
+    if (!selectedFile || !repoUrl) return;
+
+    const cleanRepoUrl = repoUrl.replace(/\.git$/, "");
+    const vscodeUrl = `vscode://file/${selectedFile}`;
+    const githubUrl = `${cleanRepoUrl}/blob/main/${selectedFile}`;
+
+    window.location.href = vscodeUrl;
+
+    setTimeout(() => {
+      window.open(githubUrl, "_blank");
+    }, 500);
+  }, [selectedFile, repoUrl]);
 
 
   const displayData = useMemo(() => {
@@ -77,6 +104,7 @@ export default function App() {
         })),
         backLinks: graph.backLinks || {},
       });
+      setRepoUrl(url);
     } catch (err) {
       console.error("Analyze error:", err);
       setGraphData(null);
@@ -186,6 +214,24 @@ export default function App() {
                     title="Copy file path"
                   >
                     {copied ? "✓" : "Copy"}
+                  </button>
+                  <div className="ca-copy"> | </div>
+                  <button
+                    onClick={handleOpenInGitHub}
+                    className="ca-copy"
+                    title="Open in GitHub"
+                    disabled={!selectedFile}
+                  >
+                 GitHub
+                  </button>
+                  <div className="ca-copy"> | </div>
+                  <button
+                    onClick={handleOpenInVSCode}
+                    className="ca-copy"
+                    title="Open in VS Code"
+                    disabled={!selectedFile}
+                  >
+                    VSCode
                   </button>
                 </div>
 
