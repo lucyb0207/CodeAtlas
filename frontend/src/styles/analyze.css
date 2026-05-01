@@ -125,6 +125,11 @@
         .ca-list li .arrow { color: #38bdf8; font-size: 0.6rem; }
         .ca-list li .arrow-back { color: #818cf8; font-size: 0.6rem; }
 
+        .ca-copy {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+          color: #475569;
+        }
+
         /* EDITOR */
         .ca-editor {
           flex-shrink: 0;

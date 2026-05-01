@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import RepoInput from "../components/RepoInput";
 import Graph from "../components/Graph";
 import Editor from "@monaco-editor/react";
@@ -12,6 +12,7 @@ export default function App() {
   const [graphData, setGraphData] = useState<GraphData>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [search] = useState("");
+  const [copied, setCopied] = useState(false);
   const [fileContent, setFileContent] = useState<string | null>(null);
   const [focusMode, setFocusMode] = useState(true);
   const [depth, setDepth] = useState(2);
@@ -19,6 +20,15 @@ export default function App() {
   const API = import.meta.env.DEV
     ? "http://localhost:8080"
     : "https://codeatlas-production-e4f8.up.railway.app";
+
+
+  const handleCopyPath = useCallback(() => {
+    if (!selectedFile) return;
+    navigator.clipboard.writeText(selectedFile);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }, [selectedFile]);
+
 
   const displayData = useMemo(() => {
     if (!graphData) return null;
@@ -168,7 +178,16 @@ export default function App() {
               </div>
               <div className="ca-sidebar-body">
                 <div className="ca-label">File</div>
-                <div className="ca-filepath">{selectedFile}</div>
+                <div className="flex items-center gap-1 mb-3">
+                  <span className="ca-filepath">{selectedFile}</span>
+                  <button
+                    onClick={handleCopyPath}
+                    className="ca-copy"
+                    title="Copy file path"
+                  >
+                    {copied ? "✓" : "Copy"}
+                  </button>
+                </div>
 
                 <div className="ca-label">Imports</div>
                 <ul className="ca-list">
