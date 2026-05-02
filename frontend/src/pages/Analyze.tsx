@@ -21,7 +21,7 @@ export default function App() {
 
   const API = import.meta.env.DEV
     ? "http://localhost:8080"
-    : "https://codeatlas-wa02.onrender.com/";
+    : "https://codeatlas-wa02.onrender.com";
 
 
   const handleCopyPath = useCallback(() => {
