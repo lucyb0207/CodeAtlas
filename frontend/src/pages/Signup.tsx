@@ -3,21 +3,22 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "../styles/login.css";
 
-export default function Login() {
+export default function Signup() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = async () => {
-    const { error } = await supabase.auth.signInWithPassword({
+  const handleSignup = async () => {
+    const { error } = await supabase.auth.signUp({
       email,
       password,
     });
 
     if (error) return alert(error.message);
 
-    navigate("/dashboard");
+    alert("Check your email (or login if email confirm is off)");
+    navigate("/login");
   };
 
   const handleGitHub = async () => {
@@ -28,7 +29,6 @@ export default function Login() {
       },
     });
   };
-
   return (
     <div className="ca-login-root">
       <canvas className="ca-login-canvas" />
@@ -49,7 +49,7 @@ export default function Login() {
         <div className="ca-login-label">Continue with</div>
 
         <button className="ca-github-btn" onClick={handleGitHub}>
-          Sign in with GitHub
+          Sign up with GitHub
         </button>
         <div className="ca-email-box">
         <input
@@ -66,10 +66,10 @@ export default function Login() {
         />
         </div>
 
-        <button className="ca-github-btn" onClick={handleLogin}>Login</button>
+        <button className="ca-github-btn" onClick={handleSignup}>Create Account</button>
 
         <button className="ca-back-btn" onClick={() => navigate("/signup")}>
-          No account? Sign up
+          Already have an account? Login
         </button>
       </div>
     </div>
