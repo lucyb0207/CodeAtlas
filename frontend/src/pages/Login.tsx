@@ -21,12 +21,14 @@ export default function Login() {
   };
 
   const handleGitHub = async () => {
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: window.location.origin + "/analyze",
+        redirectTo: `${window.location.origin}/dashboard`,
       },
     });
+
+    if (error) console.error(error);
   };
 
   return (
