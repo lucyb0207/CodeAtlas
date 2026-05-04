@@ -1,90 +1,378 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@300;400&display=swap');
-
+ @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@300;400&display=swap');
+ 
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
         .ca-root {
           background: #050810;
           color: #e8eaf0;
           font-family: 'Syne', sans-serif;
+          overflow-x: hidden;
           min-height: 100vh;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
         }
-        .ca-canvas { position: fixed; inset: 0; z-index: 0; opacity: 0.55; }
+ 
+        /* ── CANVAS ── */
+        .ca-canvas {
+          position: fixed; inset: 0; z-index: 0; opacity: 0.5; pointer-events: none;
+        }
         .ca-grid {
           position: fixed; inset: 0; z-index: 0; pointer-events: none;
           background-image:
-            linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
+            linear-gradient(rgba(56,189,248,0.028) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(56,189,248,0.028) 1px, transparent 1px);
           background-size: 60px 60px;
         }
         .ca-orb {
           position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0;
         }
-        .ca-orb1 {
-          width: 400px; height: 400px;
-          background: radial-gradient(circle, rgba(56,189,248,0.12) 0%, transparent 70%);
-          top: -100px; right: -80px;
+        .ca-orb1 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(56,189,248,0.1) 0%, transparent 70%); top: -120px; right: -100px; }
+        .ca-orb2 { width: 350px; height: 350px; background: radial-gradient(circle, rgba(99,102,241,0.09) 0%, transparent 70%); bottom: 10%; left: -80px; }
+        .ca-orb3 { width: 280px; height: 280px; background: radial-gradient(circle, rgba(56,189,248,0.06) 0%, transparent 70%); top: 40%; left: 30%; }
+ 
+        /* ── NAV ── */
+        .ca-nav {
+          position: sticky; top: 0; z-index: 100;
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 1.1rem 2.8rem;
+          border-bottom: 1px solid rgba(56,189,248,0.08);
+          background: rgba(5,8,16,0.8); backdrop-filter: blur(16px);
         }
-        .ca-orb2 {
-          width: 300px; height: 300px;
-          background: radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 70%);
-          bottom: -80px; left: -60px;
+        .ca-nav-logo { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; }
+        .ca-nav-accent { background: linear-gradient(90deg,#38bdf8,#818cf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .ca-nav-links { display: flex; align-items: center; gap: 2rem; }
+        .ca-nav-link {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em;
+          text-transform: uppercase; color: #334155; text-decoration: none;
+          transition: color 0.18s; cursor: pointer;
         }
-        .ca-container {
+        .ca-nav-link:hover { color: #94a3b8; }
+        .ca-nav-cta {
+          font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700;
+          letter-spacing: 0.06em; text-transform: uppercase;
+          background: linear-gradient(135deg,#38bdf8,#6366f1); color: #fff;
+          border: none; padding: 0.5rem 1.4rem; border-radius: 4px; cursor: pointer;
+          transition: transform 0.18s, box-shadow 0.18s;
+          box-shadow: 0 0 0 1px rgba(56,189,248,0.3), 0 4px 18px rgba(56,189,248,0.14);
+        }
+        .ca-nav-cta:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px rgba(56,189,248,0.5), 0 8px 28px rgba(56,189,248,0.24); }
+ 
+        /* ── SECTIONS ── */
+        .ca-section { position: relative; z-index: 10; }
+        .ca-container { max-width: 1020px; margin: 0 auto; padding: 0 2rem; }
+        .ca-container-sm { max-width: 720px; margin: 0 auto; padding: 0 2rem; }
+ 
+        /* ── HERO ── */
+        .ca-hero {
+          min-height: 100vh; display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          text-align: center; padding: 6rem 2rem 4rem;
           position: relative; z-index: 10;
-          display: flex; flex-direction: column; align-items: center; text-align: center;
-          padding: 2rem; max-width: 680px;
-          animation: caFadeUp 0.9s cubic-bezier(0.16,1,0.3,1) both;
         }
-        @keyframes caFadeUp {
-          from { opacity: 0; transform: translateY(28px); }
-          to   { opacity: 1; transform: translateY(0); }
+        .ca-hero-eyebrow {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+          letter-spacing: 0.24em; text-transform: uppercase; color: #38bdf8;
+          border: 1px solid rgba(56,189,248,0.22); background: rgba(56,189,248,0.06);
+          padding: 0.32rem 1rem; border-radius: 999px; margin-bottom: 2.4rem;
+          display: inline-block;
+          animation: caHeroFade 0.9s 0.1s cubic-bezier(0.16,1,0.3,1) both;
         }
-        .ca-eyebrow {
-          font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
-          font-weight: 300; letter-spacing: 0.22em; text-transform: uppercase;
-          color: #38bdf8; border: 1px solid rgba(56,189,248,0.25);
-          padding: 0.35rem 1rem; border-radius: 999px; margin-bottom: 2.2rem;
-          background: rgba(56,189,248,0.06);
-          animation: caFadeUp 0.9s 0.1s cubic-bezier(0.16,1,0.3,1) both;
-        }
-        .ca-h1 {
-          font-size: clamp(3.8rem, 10vw, 6rem); font-weight: 800;
-          line-height: 0.95; letter-spacing: -0.03em; margin-bottom: 1.6rem;
-          animation: caFadeUp 0.9s 0.18s cubic-bezier(0.16,1,0.3,1) both;
-          background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+        @keyframes caHeroFade { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+        .ca-hero-h1 {
+          font-size: clamp(3.4rem, 9vw, 6.2rem); font-weight: 800; line-height: 0.95;
+          letter-spacing: -0.035em; margin-bottom: 1.8rem;
+          animation: caHeroFade 0.9s 0.18s cubic-bezier(0.16,1,0.3,1) both;
+          background: linear-gradient(160deg, #ffffff 40%, #64748b 100%);
           -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-        .ca-accent {
-          background: linear-gradient(90deg, #38bdf8, #818cf8);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        .ca-hero-h1 em { font-style: normal; background: linear-gradient(90deg,#38bdf8,#818cf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .ca-hero-sub {
+          font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 300;
+          line-height: 1.8; color: #64748b; max-width: 520px; margin: 0 auto 3rem;
+          animation: caHeroFade 0.9s 0.26s cubic-bezier(0.16,1,0.3,1) both;
         }
-        .ca-p {
-          font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 300;
-          line-height: 1.75; color: #94a3b8; max-width: 440px; margin-bottom: 3rem;
-          animation: caFadeUp 0.9s 0.26s cubic-bezier(0.16,1,0.3,1) both;
-        }
-        .ca-btn-group {
-          display: flex; flex-direction: column; align-items: center; gap: 0.9rem;
-          animation: caFadeUp 0.9s 0.34s cubic-bezier(0.16,1,0.3,1) both;
+        .ca-hero-ctas {
+          display: flex; align-items: center; gap: 1rem; justify-content: center; flex-wrap: wrap;
+          animation: caHeroFade 0.9s 0.34s cubic-bezier(0.16,1,0.3,1) both;
         }
         .ca-btn {
-          position: relative; font-family: 'Syne', sans-serif; font-size: 0.9rem;
-          font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-          background: linear-gradient(135deg, #38bdf8, #6366f1);
-          color: #fff; border: none; padding: 0.85rem 2.6rem; border-radius: 4px;
-          cursor: pointer; overflow: hidden;
-          transition: transform 0.18s ease, box-shadow 0.18s ease;
-          box-shadow: 0 0 0 1px rgba(56,189,248,0.3), 0 8px 32px rgba(56,189,248,0.18);
+          font-family: 'Syne', sans-serif; font-size: 0.88rem; font-weight: 700;
+          letter-spacing: 0.06em; text-transform: uppercase;
+          background: linear-gradient(135deg,#38bdf8,#6366f1); color: #fff;
+          border: none; padding: 0.85rem 2.4rem; border-radius: 4px; cursor: pointer;
+          transition: transform 0.18s, box-shadow 0.18s;
+          box-shadow: 0 0 0 1px rgba(56,189,248,0.35), 0 8px 32px rgba(56,189,248,0.2);
         }
-        .ca-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 0 0 1px rgba(56,189,248,0.5), 0 16px 48px rgba(56,189,248,0.28);
-        }
+        .ca-btn:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(56,189,248,0.55), 0 16px 48px rgba(56,189,248,0.28); }
         .ca-btn:active { transform: translateY(0); }
-        .ca-sub {
-          font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
-          color: #475569; letter-spacing: 0.1em;
+        .ca-btn-ghost {
+          font-family: 'Syne', sans-serif; font-size: 0.88rem; font-weight: 700;
+          letter-spacing: 0.06em; text-transform: uppercase; color: #64748b;
+          background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+          padding: 0.85rem 2.4rem; border-radius: 4px; cursor: pointer;
+          transition: all 0.18s;
         }
+        .ca-btn-ghost:hover { color: #94a3b8; border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.07); }
+        .ca-hero-trust {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+          letter-spacing: 0.12em; color: #1e293b; margin-top: 1.4rem;
+          animation: caHeroFade 0.9s 0.42s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        .ca-hero-scroll {
+          position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+          display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+          animation: caHeroFade 0.9s 0.6s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        .ca-scroll-line {
+          width: 1px; height: 40px; background: linear-gradient(to bottom, rgba(56,189,248,0.4), transparent);
+          animation: caScrollPulse 2s ease-in-out infinite;
+        }
+        @keyframes caScrollPulse { 0%,100%{opacity:0.3;} 50%{opacity:1;} }
+ 
+        /* ── SOCIAL PROOF ── */
+        .ca-proof {
+          padding: 3.5rem 0; border-top: 1px solid rgba(56,189,248,0.06);
+          border-bottom: 1px solid rgba(56,189,248,0.06);
+        }
+        .ca-proof-inner {
+          display: flex; align-items: center; justify-content: center;
+          flex-wrap: wrap; gap: 2.4rem;
+        }
+        .ca-proof-label {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+          letter-spacing: 0.2em; text-transform: uppercase; color: #1e293b;
+        }
+        .ca-proof-divider { width: 1px; height: 20px; background: rgba(56,189,248,0.1); }
+        .ca-proof-stat {
+          display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+        }
+        .ca-proof-num {
+          font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em;
+          background: linear-gradient(135deg,#38bdf8,#818cf8);
+          -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+        }
+        .ca-proof-desc {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+          letter-spacing: 0.14em; text-transform: uppercase; color: #334155;
+        }
+        .ca-proof-logos {
+          display: flex; align-items: center; gap: 1.8rem; flex-wrap: wrap; justify-content: center;
+        }
+        .ca-proof-logo {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+          letter-spacing: 0.1em; color: #1e293b;
+          border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02);
+          padding: 0.4rem 1rem; border-radius: 4px;
+          transition: color 0.2s, border-color 0.2s;
+        }
+        .ca-proof-logo:hover { color: #334155; border-color: rgba(56,189,248,0.15); }
+ 
+        /* ── FEATURES ── */
+        .ca-features { padding: 7rem 0; }
+        .ca-section-eyebrow {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+          letter-spacing: 0.22em; text-transform: uppercase; color: #38bdf8;
+          margin-bottom: 1rem;
+        }
+        .ca-section-h2 {
+          font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800;
+          letter-spacing: -0.03em; line-height: 1.05;
+          background: linear-gradient(135deg, #fff 50%, #475569 100%);
+          -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+          margin-bottom: 1rem;
+        }
+        .ca-section-sub {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+          line-height: 1.8; color: #475569; max-width: 480px;
+        }
+        .ca-features-header { margin-bottom: 4rem; }
+        .ca-features-grid {
+          display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 1.4rem;
+        }
+        .ca-feature-card {
+          background: rgba(8,14,28,0.85);
+          border: 1px solid rgba(56,189,248,0.09);
+          border-radius: 8px; padding: 2rem 1.6rem;
+          transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+          position: relative; overflow: hidden;
+        }
+        .ca-feature-card::before {
+          content: ''; position: absolute; inset: 0;
+          background: linear-gradient(135deg, rgba(56,189,248,0.03) 0%, transparent 60%);
+          opacity: 0; transition: opacity 0.25s; pointer-events: none;
+        }
+        .ca-feature-card:hover { border-color: rgba(56,189,248,0.25); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(56,189,248,0.08); }
+        .ca-feature-card:hover::before { opacity: 1; }
+        .ca-feature-icon {
+          width: 40px; height: 40px; border-radius: 8px;
+          background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.15);
+          display: flex; align-items: center; justify-content: center;
+          margin-bottom: 1.2rem;
+        }
+        .ca-feature-title {
+          font-size: 1rem; font-weight: 700; letter-spacing: -0.01em;
+          color: #e2e8f0; margin-bottom: 0.55rem;
+        }
+        .ca-feature-desc {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+          line-height: 1.8; color: #334155;
+        }
+ 
+        /* ── HOW IT WORKS ── */
+        .ca-how { padding: 7rem 0; }
+        .ca-how-steps {
+          display: grid; grid-template-columns: repeat(3, 1fr);
+          gap: 0; margin-top: 4rem; position: relative;
+        }
+        .ca-how-steps::before {
+          content: ''; position: absolute; top: 28px; left: calc(16.66% + 20px);
+          right: calc(16.66% + 20px); height: 1px;
+          background: linear-gradient(90deg, rgba(56,189,248,0.3), rgba(129,140,248,0.3), rgba(56,189,248,0.3));
+        }
+        .ca-step { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 1.5rem; }
+        .ca-step-num {
+          width: 56px; height: 56px; border-radius: 50%;
+          background: rgba(8,14,28,0.9); border: 1px solid rgba(56,189,248,0.25);
+          display: flex; align-items: center; justify-content: center;
+          font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+          font-weight: 400; letter-spacing: 0.12em; color: #38bdf8;
+          margin-bottom: 1.4rem; position: relative; z-index: 2;
+        }
+        .ca-step-title { font-size: 1rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.5rem; }
+        .ca-step-desc { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; line-height: 1.8; color: #334155; }
+ 
+        /* ── PREVIEW ── */
+        .ca-preview { padding: 7rem 0; }
+        .ca-preview-wrap {
+          position: relative; margin-top: 4rem;
+          border-radius: 10px; overflow: hidden;
+          border: 1px solid rgba(56,189,248,0.14);
+          box-shadow: 0 0 0 1px rgba(56,189,248,0.06), 0 40px 100px rgba(0,0,0,0.6), 0 0 80px rgba(56,189,248,0.06);
+        }
+        .ca-preview-bar {
+          background: rgba(8,14,28,0.95);
+          border-bottom: 1px solid rgba(56,189,248,0.1);
+          padding: 0.7rem 1.2rem;
+          display: flex; align-items: center; gap: 0.6rem;
+        }
+        .ca-preview-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .ca-preview-dot-r { background: rgba(239,68,68,0.6); }
+        .ca-preview-dot-y { background: rgba(234,179,8,0.5); }
+        .ca-preview-dot-g { background: rgba(34,197,94,0.5); }
+        .ca-preview-title {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+          letter-spacing: 0.12em; color: #334155; margin-left: 0.5rem;
+        }
+        .ca-preview-body {
+          background: #050810;
+          background-image:
+            linear-gradient(rgba(56,189,248,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(56,189,248,0.025) 1px, transparent 1px);
+          background-size: 40px 40px;
+          height: 380px; position: relative; overflow: hidden;
+          display: flex;
+        }
+        .ca-preview-graph { flex: 1; position: relative; }
+        .ca-preview-sidebar {
+          width: 200px; flex-shrink: 0;
+          border-left: 1px solid rgba(56,189,248,0.08);
+          background: rgba(5,8,16,0.9);
+          padding: 1.2rem 1rem; font-family: 'JetBrains Mono', monospace;
+        }
+        .ca-preview-slabel {
+          font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase;
+          color: #1e293b; margin-bottom: 0.4rem; margin-top: 1rem;
+        }
+        .ca-preview-slabel:first-child { margin-top: 0; }
+        .ca-preview-sfile { font-size: 0.65rem; color: #38bdf8; word-break: break-all; }
+        .ca-preview-sitem {
+          font-size: 0.62rem; color: #334155; padding: 0.18rem 0;
+          border-bottom: 1px solid rgba(56,189,248,0.04); display: flex; gap: 0.3rem;
+        }
+        .ca-preview-sarrow { color: #38bdf8; }
+        .ca-preview-sarrow-b { color: #818cf8; }
+ 
+        /* mock graph svg inside preview */
+        .ca-preview-svg { width: 100%; height: 100%; }
+ 
+        /* ── VALUE PROP ── */
+        .ca-value { padding: 7rem 0; }
+        .ca-value-inner { text-align: center; }
+        .ca-value-h2 {
+          font-size: clamp(2.2rem, 5.5vw, 3.8rem); font-weight: 800;
+          letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 2rem;
+          background: linear-gradient(135deg, #fff 50%, #475569 100%);
+          -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+        }
+        .ca-value-h2 em { font-style: normal; background: linear-gradient(90deg,#38bdf8,#818cf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .ca-value-points {
+          display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 1.2rem; margin-top: 3.5rem; text-align: left;
+        }
+        .ca-value-point {
+          padding: 1.6rem;
+          background: rgba(8,14,28,0.7);
+          border: 1px solid rgba(56,189,248,0.07);
+          border-radius: 8px;
+          transition: border-color 0.2s;
+        }
+        .ca-value-point:hover { border-color: rgba(56,189,248,0.18); }
+        .ca-value-point-num {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+          letter-spacing: 0.2em; color: #38bdf8; margin-bottom: 0.7rem;
+          text-transform: uppercase;
+        }
+        .ca-value-point-title {
+          font-size: 1rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.4rem;
+        }
+        .ca-value-point-desc {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+          line-height: 1.8; color: #334155;
+        }
+ 
+        /* ── FINAL CTA ── */
+        .ca-final { padding: 9rem 0; text-align: center; }
+        .ca-final-h2 {
+          font-size: clamp(2.4rem, 6vw, 4.5rem); font-weight: 800;
+          letter-spacing: -0.035em; line-height: 0.95; margin-bottom: 1.4rem;
+          background: linear-gradient(160deg, #ffffff 40%, #64748b 100%);
+          -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+        }
+        .ca-final-sub {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+          color: #334155; margin-bottom: 2.8rem; line-height: 1.8;
+        }
+        .ca-final-trust {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+          letter-spacing: 0.12em; color: #1e293b; margin-top: 1.2rem;
+        }
+ 
+        /* ── FOOTER ── */
+        .ca-footer {
+          border-top: 1px solid rgba(56,189,248,0.07);
+          padding: 2.4rem 2.8rem;
+          display: flex; align-items: center; justify-content: space-between;
+          flex-wrap: wrap; gap: 1.2rem;
+          position: relative; z-index: 10;
+        }
+        .ca-footer-logo { font-size: 0.95rem; font-weight: 800; letter-spacing: -0.02em; }
+        .ca-footer-links { display: flex; gap: 2rem; flex-wrap: wrap; }
+        .ca-footer-link {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+          letter-spacing: 0.1em; text-transform: uppercase;
+          color: #1e293b; text-decoration: none; cursor: pointer;
+          transition: color 0.18s;
+        }
+        .ca-footer-link:hover { color: #38bdf8; }
+        .ca-footer-copy {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+          letter-spacing: 0.08em; color: #0f172a;
+        }
+ 
+        /* ── DELAY UTILITIES ── */
+        .ca-d1 { transition-delay: 0.05s !important; }
+        .ca-d2 { transition-delay: 0.12s !important; }
+        .ca-d3 { transition-delay: 0.19s !important; }
+        .ca-d4 { transition-delay: 0.26s !important; }
+        .ca-d5 { transition-delay: 0.08s !important; }
+        .ca-d6 { transition-delay: 0.16s !important; }
+        .ca-d7 { transition-delay: 0.24s !important; }
