@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import RepoInput from "../components/RepoInput";
 import Graph from "../components/Graph";
 import Editor from "@monaco-editor/react";
@@ -18,6 +19,7 @@ export default function App() {
   const [depth, setDepth] = useState(2);
   const [loading, setLoading] = useState(false);
   const [repoUrl, setRepoUrl] = useState<string>("");
+  const navigate = useNavigate();
 
   const API = import.meta.env.DEV
     ? "http://localhost:8080"
@@ -146,6 +148,7 @@ export default function App() {
             />
             <span className="ca-depth-val">{depth}</span>
           </div>
+          <button className="ca-db-logout" onClick={() => navigate("/dashboard")}>back to dashboard →</button>
         </div>
 
         {/* MAIN */}
