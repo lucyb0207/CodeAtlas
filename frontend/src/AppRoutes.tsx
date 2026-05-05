@@ -6,6 +6,7 @@ import Signup from "./pages/Signup";
 import Analyze from "./pages/Analyze";
 import { useEffect } from "react";
 import { supabase } from "./lib/supabase";
+import Docs from "./pages/Docs";
 
 import ProtectedRoute from "./auth/ProtectedRoute";
 
@@ -51,6 +52,7 @@ export default function AppRouter() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/docs" element={<Docs />} />
 
         <Route
           path="/analyze"

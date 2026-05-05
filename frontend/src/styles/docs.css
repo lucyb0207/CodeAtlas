@@ -1,0 +1,215 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@300;400&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+        .ca-docs-root {
+          background: #050810; color: #e8eaf0;
+          font-family: 'Syne', sans-serif;
+          height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+ 
+        /* NAV */
+        .ca-docs-nav {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0.85rem 1.8rem;
+          border-bottom: 1px solid rgba(56,189,248,0.1);
+          background: rgba(5,8,16,0.95); backdrop-filter: blur(12px);
+          flex-shrink: 0; z-index: 30;
+        }
+        .ca-docs-nav-left { display: flex; align-items: center; gap: 1.2rem; }
+        .ca-docs-logo { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em; cursor: pointer; }
+        .ca-docs-logo-accent { background: linear-gradient(90deg,#38bdf8,#818cf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .ca-docs-nav-divider { width: 1px; height: 18px; background: rgba(56,189,248,0.12); }
+        .ca-docs-nav-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.16em; text-transform: uppercase; color: #334155; }
+        .ca-docs-nav-right { display: flex; align-items: center; gap: 1.4rem; }
+        .ca-docs-nav-link { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: #1e293b; cursor: pointer; transition: color 0.18s; }
+        .ca-docs-nav-link:hover { color: #475569; }
+        .ca-docs-nav-cta {
+          font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em;
+          background: linear-gradient(135deg,#38bdf8,#6366f1); color: #fff;
+          border: none; padding: 0.42rem 1.1rem; border-radius: 4px; cursor: pointer;
+          box-shadow: 0 0 0 1px rgba(56,189,248,0.3), 0 4px 14px rgba(56,189,248,0.14);
+          transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .ca-docs-nav-cta:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px rgba(56,189,248,0.5), 0 8px 24px rgba(56,189,248,0.22); }
+ 
+        /* LAYOUT */
+        .ca-docs-layout { display: flex; flex: 1; overflow: hidden; }
+ 
+        /* SIDEBAR */
+        .ca-docs-sidebar {
+          width: 236px; flex-shrink: 0;
+          border-right: 1px solid rgba(56,189,248,0.08);
+          background: rgba(5,8,16,0.8);
+          overflow-y: auto; padding: 1.6rem 0;
+        }
+        .ca-docs-sidebar::-webkit-scrollbar { width: 3px; }
+        .ca-docs-sidebar::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.12); border-radius: 2px; }
+        .ca-docs-sidebar-section { margin-bottom: 1.8rem; }
+        .ca-docs-sidebar-label {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+          letter-spacing: 0.22em; text-transform: uppercase; color: #1e293b;
+          padding: 0 1.4rem; margin-bottom: 0.5rem;
+        }
+        .ca-docs-sidebar-item {
+          display: flex; align-items: center; gap: 0.55rem;
+          padding: 0.38rem 1.4rem; cursor: pointer;
+          font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+          letter-spacing: 0.03em; color: #334155;
+          border-left: 2px solid transparent;
+          transition: color 0.15s, background 0.15s, border-color 0.15s;
+        }
+        .ca-docs-sidebar-item:hover { color: #64748b; background: rgba(56,189,248,0.03); }
+        .ca-docs-sidebar-item.active { color: #38bdf8; border-left-color: #38bdf8; background: rgba(56,189,248,0.06); }
+        .ca-docs-sidebar-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+ 
+        /* CONTENT */
+        .ca-docs-content { flex: 1; overflow-y: auto; padding: 3rem 3.5rem; }
+        .ca-docs-content::-webkit-scrollbar { width: 3px; }
+        .ca-docs-content::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.1); border-radius: 2px; }
+        .ca-docs-content-inner { max-width: 660px; }
+ 
+        /* BREADCRUMB */
+        .ca-docs-breadcrumb {
+          display: flex; align-items: center; gap: 0.5rem;
+          font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+          letter-spacing: 0.12em; color: #1e293b; margin-bottom: 2.2rem; text-transform: uppercase;
+        }
+        .ca-docs-breadcrumb-sep { color: #0f172a; }
+        .ca-docs-breadcrumb-cur { color: #334155; }
+ 
+        /* PAGE ELEMENTS */
+        .ca-docs-page-eyebrow {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+          letter-spacing: 0.2em; text-transform: uppercase; color: #38bdf8; margin-bottom: 0.7rem;
+        }
+        .ca-docs-h1 {
+          font-size: 2.1rem; font-weight: 800; letter-spacing: -0.03em;
+          background: linear-gradient(135deg, #fff 50%, #64748b 100%);
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+          margin-bottom: 0.8rem; line-height: 1.1;
+        }
+        .ca-docs-lead {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+          line-height: 1.9; color: #475569; margin-bottom: 2.4rem;
+          padding-bottom: 2.4rem; border-bottom: 1px solid rgba(56,189,248,0.08);
+        }
+        .ca-docs-h2 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; color: #e2e8f0; margin: 2.2rem 0 0.8rem; }
+        .ca-docs-h3 {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+          font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase;
+          color: #38bdf8; margin: 1.6rem 0 0.6rem;
+        }
+        .ca-docs-p { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; line-height: 1.9; color: #475569; margin-bottom: 1.1rem; }
+ 
+        /* INLINE CODE */
+        .ca-docs-ic {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.71rem;
+          background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.15);
+          padding: 0.1rem 0.38rem; border-radius: 3px; color: #38bdf8;
+        }
+ 
+        /* KBD */
+        .ca-docs-kbd {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+          background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+          border-bottom: 2px solid rgba(255,255,255,0.08);
+          padding: 0.15rem 0.45rem; border-radius: 3px; color: #94a3b8;
+        }
+ 
+        /* CALLOUT */
+        .ca-docs-callout {
+          background: rgba(56,189,248,0.05); border: 1px solid rgba(56,189,248,0.14);
+          border-left: 3px solid #38bdf8; border-radius: 0 6px 6px 0;
+          padding: 0.9rem 1.1rem; margin: 1.4rem 0;
+        }
+        .ca-docs-callout-warn { background: rgba(251,191,36,0.04); border-color: rgba(251,191,36,0.18); border-left-color: #fbbf24; }
+        .ca-docs-callout-label {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+          letter-spacing: 0.2em; text-transform: uppercase; color: #38bdf8; margin-bottom: 0.35rem;
+        }
+        .ca-docs-callout-warn .ca-docs-callout-label { color: #fbbf24; }
+        .ca-docs-callout p { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; line-height: 1.8; color: #475569; margin: 0; }
+ 
+        /* CODE BLOCK */
+        .ca-docs-code-block {
+          background: rgba(0,0,0,0.4); border: 1px solid rgba(56,189,248,0.1);
+          border-radius: 6px; overflow: hidden; margin: 1.2rem 0;
+        }
+        .ca-docs-code-header {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0.45rem 1rem; border-bottom: 1px solid rgba(56,189,248,0.08);
+          background: rgba(5,8,16,0.6);
+        }
+        .ca-docs-code-lang { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; color: #334155; }
+        .ca-docs-code-copy { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: #1e293b; cursor: pointer; transition: color 0.15s; }
+        .ca-docs-code-copy:hover { color: #38bdf8; }
+        .ca-docs-code-body { padding: 1rem 1.1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; line-height: 1.85; overflow-x: auto; }
+        .ca-kw { color: #818cf8; }
+        .ca-fn { color: #38bdf8; }
+        .ca-str { color: #86efac; }
+        .ca-cm { color: #1e293b; }
+ 
+        /* STEPS */
+        .ca-docs-steps { margin: 1.4rem 0; display: flex; flex-direction: column; gap: 2px; }
+        .ca-docs-step {
+          display: flex; gap: 1.1rem; padding: 1.1rem;
+          background: rgba(8,14,28,0.7); border: 1px solid rgba(56,189,248,0.07);
+          border-radius: 6px;
+        }
+        .ca-docs-step-n {
+          width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+          background: rgba(56,189,248,0.07); border: 1px solid rgba(56,189,248,0.18);
+          display: flex; align-items: center; justify-content: center;
+          font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: #38bdf8;
+        }
+        .ca-docs-step-title { font-size: 0.84rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.28rem; }
+        .ca-docs-step-desc { font-family: 'JetBrains Mono', monospace; font-size: 0.69rem; line-height: 1.8; color: #334155; }
+ 
+        /* TABLE */
+        .ca-docs-table { width: 100%; border-collapse: collapse; margin: 1.2rem 0; }
+        .ca-docs-table th {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.16em;
+          text-transform: uppercase; color: #334155; text-align: left;
+          padding: 0.55rem 0.8rem; border-bottom: 1px solid rgba(56,189,248,0.1);
+        }
+        .ca-docs-table td {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.69rem;
+          color: #475569; padding: 0.6rem 0.8rem;
+          border-bottom: 1px solid rgba(56,189,248,0.05);
+          vertical-align: middle;
+        }
+        .ca-docs-table tr:hover td { background: rgba(56,189,248,0.02); }
+ 
+        /* BADGE */
+        .ca-docs-badge {
+          display: inline-block; font-family: 'JetBrains Mono', monospace;
+          font-size: 0.56rem; letter-spacing: 0.12em; text-transform: uppercase;
+          padding: 0.15rem 0.5rem; border-radius: 999px;
+        }
+        .ca-docs-badge-yes { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.2); color: #34d399; }
+        .ca-docs-badge-soon { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.15); color: #fbbf24; }
+ 
+        /* NAV FOOTER */
+        .ca-docs-nav-footer {
+          display: flex; justify-content: space-between; gap: 1rem;
+          margin-top: 3.5rem; padding-top: 2rem;
+          border-top: 1px solid rgba(56,189,248,0.08);
+        }
+        .ca-docs-nav-btn {
+          display: flex; flex-direction: column; gap: 0.3rem; padding: 0.9rem 1.1rem;
+          background: rgba(8,14,28,0.7); border: 1px solid rgba(56,189,248,0.09);
+          border-radius: 6px; cursor: pointer; flex: 1; transition: border-color 0.18s; max-width: 220px;
+        }
+        .ca-docs-nav-btn:hover { border-color: rgba(56,189,248,0.22); }
+        .ca-docs-nav-btn-next { align-items: flex-end; margin-left: auto; }
+        .ca-docs-nav-btn-empty { background: transparent; border-color: transparent; cursor: default; pointer-events: none; }
+        .ca-docs-nav-dir { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; color: #1e293b; }
+        .ca-docs-nav-page { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #38bdf8; }
+ 
+        /* TOC */
+        .ca-docs-toc { width: 174px; flex-shrink: 0; padding: 3rem 1.2rem 2rem; border-left: 1px solid rgba(56,189,248,0.06); }
+        .ca-docs-toc-label { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; letter-spacing: 0.2em; text-transform: uppercase; color: #1e293b; margin-bottom: 0.9rem; }
+        .ca-docs-toc-item { font-family: 'JetBrains Mono', monospace; font-size: 0.63rem; color: #1e293b; padding: 0.26rem 0; cursor: pointer; transition: color 0.15s; display: block; }
+        .ca-docs-toc-item:hover { color: #38bdf8; }
+        .ca-docs-toc-item-active { color: #38bdf8; }
+        .ca-docs-toc-sub { padding-left: 0.8rem; font-size: 0.6rem; }

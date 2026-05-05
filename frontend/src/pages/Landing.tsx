@@ -105,7 +105,7 @@ export default function Landing() {
           <div className="ca-nav-links">
             <span className="ca-nav-link">Features</span>
             <span className="ca-nav-link">How it works</span>
-            <span className="ca-nav-link">Docs</span>
+            <span className="ca-nav-link"><a href="/docs">Docs</a></span>
           </div>
           <button className="ca-nav-cta" onClick={() => navigate("/login")}>Get Started</button>
         </nav>
