@@ -56,6 +56,8 @@ All notable changes to **CodeAtlas** will be documented in this file.
 - Graph performance optimizations (large repos)
 - GitHub API integration (no local cloning)
 - Export/share graphs
+- Circular Dependency detection and dynamic imports
+- Private repo support and local file analysis
 
 ---
 
