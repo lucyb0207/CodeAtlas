@@ -57,9 +57,7 @@ export default function AppRouter() {
         <Route
           path="/analyze"
           element={
-            <ProtectedRoute>
               <Analyze />
-            </ProtectedRoute>
           }
         />
         <Route

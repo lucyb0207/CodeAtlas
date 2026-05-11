@@ -103,11 +103,11 @@ export default function Landing() {
         <nav className="ca-nav">
           <div className="ca-nav-logo">Code<span className="ca-nav-accent">Atlas</span></div>
           <div className="ca-nav-links">
-            <span className="ca-nav-link">Features</span>
-            <span className="ca-nav-link">How it works</span>
-            <span className="ca-nav-link"><a href="/docs">Docs</a></span>
+            <button className="ca-nav-link" onClick={() => navigate("/analyze")}>
+              Live Demo
+            </button>
           </div>
-          <button className="ca-nav-cta" onClick={() => navigate("/login")}>Get Started</button>
+          <button className="ca-nav-cta" onClick={() => navigate("/analyze")}>Get Started</button>
         </nav>
  
         {/* ── HERO ── */}
@@ -121,7 +121,7 @@ export default function Landing() {
             import, and dependency into an interactive graph you can explore.
           </p>
           <div className="ca-hero-ctas">
-            <button className="ca-btn" onClick={() => navigate("/login")}>Get Started</button>
+            <button className="ca-btn" onClick={() => navigate("/analyze")}>Analyze a Repo</button>
           </div>
           <p className="ca-hero-trust">// No setup required · Works instantly</p>
           <div className="ca-hero-scroll">
@@ -329,7 +329,7 @@ export default function Landing() {
                 Paste a GitHub URL and explore your first graph in under 60 seconds.<br />
                 No account required. No credit card. Just understanding.
               </p>
-              <button className="ca-btn" onClick={() => navigate("/login")}>
+              <button className="ca-btn" onClick={() => navigate("/analyze")}>
                 Start Exploring
               </button>
               <p className="ca-final-trust">// Free · No setup · Works on any public repo</p>

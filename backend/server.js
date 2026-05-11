@@ -29,10 +29,12 @@ const IGNORE = new Set([
 // RATE LIMITER ON ANALYSE
 // -------------------------
 const analyzeLimiter = rateLimit({
-  windowMs: 60 * 1000, 
-  max: 5,
+  windowMs: 15 * 60 * 1000, 
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
   message: {
-    error: "Too many repo analyses. Slow down.",
+    error: "Rate limit exceeded. Try again later.",
   },
 });
 

@@ -73,6 +73,10 @@ export default function App() {
   }, [graphData, focusMode, selectedFile, depth]);
 
   const handleAnalyze = async (url: string) => {
+    if (!url.includes("github.com")) {
+      alert("Only GitHub repositories are supported.");
+      return;
+    }
     try {
       setLoading(true);
       const res = await fetch(`${API}/analyze`, {
@@ -80,7 +84,12 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ repoUrl: url }),
       });
-      const raw = await res.json();
+
+      if (!res.ok) {
+        throw new Error("Failed to analyze repository");
+      }
+
+const raw = await res.json();
       const graph = raw.graph ?? raw;
       if (!graph?.nodes || !graph?.links) { setGraphData(null); return; }
       setGraphData({
@@ -94,6 +103,11 @@ export default function App() {
       setRepoUrl(url);
     } catch (err) {
       console.error("Analyze error:", err);
+
+      alert(
+        "Analysis failed. The server may be waking up or rate limited."
+      );
+
       setGraphData(null);
     } finally {
       setLoading(false);
@@ -148,7 +162,12 @@ export default function App() {
             />
             <span className="ca-depth-val">{depth}</span>
           </div>
-          <button className="ca-db-logout" onClick={() => navigate("/dashboard")}>back to dashboard →</button>
+          <button
+            className="ca-db-logout"
+            onClick={() => navigate("/")}
+          >
+            ← back home
+          </button>
         </div>
 
         {/* MAIN */}
